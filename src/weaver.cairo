@@ -1,5 +1,6 @@
 use core::starknet::ContractAddress;
 use starknet::class_hash::ClassHash;
+use core::fmt::{Debug, Formatter,};
 
 
 #[starknet::interface]
@@ -9,9 +10,9 @@ pub trait IERC721EXT<TContractState> {
     );
 }
 
-#[derive(Drop, Serde, starknet::Store)]
+#[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
 pub struct User {
-    Details: ByteArray,
+    pub Details: ByteArray,
 }
 
 #[starknet::interface]
@@ -21,6 +22,8 @@ pub trait IWeaver<TContractState> {
     fn get_register_user(self: @TContractState, address: ContractAddress) -> User;
     fn version(self: @TContractState) -> u16;
     fn upgrade(ref self: TContractState, Imp_hash: ClassHash);
+    fn owner(self: @TContractState) -> ContractAddress;
+    fn erc_721(self: @TContractState) -> ContractAddress;
 }
 
 
@@ -38,8 +41,7 @@ mod Weaver {
     use starknet::storage::StoragePointerWriteAccess;
     use super::{User, IERC721EXTDispatcher, IERC721EXTDispatcherTrait};
     use starknet::{
-        SyscallResultTrait, class_hash::ClassHash, storage::Map, ContractAddress,
-        get_caller_address, get_contract_address, get_block_timestamp
+        SyscallResultTrait, class_hash::ClassHash, storage::Map, ContractAddress, get_caller_address
     };
 
     // *************************************************************************
@@ -47,12 +49,12 @@ mod Weaver {
     // *************************************************************************
 
     #[storage]
-    struct Storage {
+    pub struct Storage {
         owner: ContractAddress,
         erc721_address: ContractAddress,
         users: Map::<ContractAddress, User>,
         registered: Map::<ContractAddress, bool>,
-        user_index: Map::<u256, ContractAddress>,
+        // user_index: Map::<u256, ContractAddress>,
         user_count: u256,
         version: u16,
     }
@@ -120,6 +122,14 @@ mod Weaver {
             starknet::syscalls::replace_class_syscall(Imp_hash).unwrap_syscall();
             self.version.write(self.version.read() + 1);
             self.emit(Event::Upgraded(Upgraded { implementation: Imp_hash }));
+        }
+
+        fn owner(self: @ContractState) -> ContractAddress {
+            return self.owner.read();
+        }
+
+        fn erc_721(self: @ContractState) -> ContractAddress {
+            return self.erc721_address.read();
         }
     }
 }

@@ -1,2 +1,2 @@
-mod weaver;
-mod erc721;
+pub mod weaver;
+pub mod erc721;

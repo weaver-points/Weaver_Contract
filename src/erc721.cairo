@@ -22,7 +22,7 @@ mod erc721 {
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
     #[storage]
-    struct Storage {
+    pub struct Storage {
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
