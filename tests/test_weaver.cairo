@@ -3,6 +3,7 @@ use core::starknet::SyscallResultTrait;
 use starknet::testing::set_block_timestamp;
 use core::result::ResultTrait;
 use core::traits::{TryInto, Into};
+use core::byte_array::ByteArray;
 
 use snforge_std::{
     declare, start_cheat_caller_address, stop_cheat_caller_address, spy_events,
@@ -39,5 +40,26 @@ fn test_weaver_constructor() {
 
     assert_eq!(weaver_contract.owner(), owner);
     assert!(weaver_contract.erc_721() == erc721_contract, "wrong erc721 address");
+}
+
+
+#[test]
+#[should_panic(expected: ('user already registered',))]
+fn test_registration_check() {
+    let weaver_contract_address = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    
+    let user: ContractAddress = contract_address_const::<0x123>();
+    start_cheat_caller_address(weaver_contract_address, user);
+    
+    // First registration should succeed
+    let details: ByteArray = "Test User";
+    weaver_contract.register_User(details);    
+    
+    // Second registration should fail with 'user already registered'
+    let new_details: ByteArray = "Test User";
+    weaver_contract.register_User(new_details);
+    
+    stop_cheat_caller_address(weaver_contract_address);
 }
 
