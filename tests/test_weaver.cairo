@@ -54,7 +54,11 @@ fn test_registration_check() {
     
     // First registration should succeed
     let details: ByteArray = "Test User";
-    weaver_contract.register_User(details);    
+    weaver_contract.register_User(details);
+
+    let is_registered = weaver_contract.get_register_user(weaver_contract_address);
+
+    assert!(is_registered.Details == details, "User should be registered");
     
     // Second registration should fail with 'user already registered'
     let new_details: ByteArray = "Test User";
