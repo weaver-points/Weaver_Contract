@@ -17,7 +17,6 @@ use core::starknet::{
 use weaver_contract::weaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
 use weaver_contract::weaver::{IERC721EXTDispatcherTrait, IERC721EXTDispatcher};
 
-
 fn OWNER() -> ContractAddress {
     'owner'.try_into().unwrap()
 }
@@ -43,8 +42,8 @@ fn __setup__() -> (ContractAddress, ContractAddress) {
     let nft_address = __deploy_weaver_NFT__();
 
     let mut calldata = array![];
-    nft_address.serialize(ref calldata);
     OWNER().serialize(ref calldata);
+    nft_address.serialize(ref calldata);
     let (contract_address, _) = class_hash.deploy(@calldata).unwrap();
 
     (contract_address, nft_address)
