@@ -17,17 +17,39 @@ use core::starknet::{
 use weaver_contract::weaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
 use weaver_contract::weaver::{IERC721EXTDispatcherTrait, IERC721EXTDispatcher};
 
-
-fn __setup__() -> ContractAddress {
-    let nft_class_hash = declare("erc721").unwrap().contract_class().class_hash;
-    let owner: ContractAddress = starknet::contract_address_const::<0x2bc02ae26b7>();
-    let weaver_contract = declare("Weaver").unwrap().contract_class();
-    let mut channel_constructor_calldata = array![(*(nft_class_hash)).into(), ((owner)).into()];
-    let (weaver_contract_address, _) = weaver_contract
-        .deploy(@channel_constructor_calldata)
-        .unwrap_syscall();
-    return weaver_contract_address;
+fn OWNER() -> ContractAddress {
+    'owner'.try_into().unwrap()
 }
+
+fn USER() -> ContractAddress {
+    'recipient'.try_into().unwrap()
+}
+
+const ADMIN: felt252 = 'ADMIN';
+
+fn __deploy_weaver_NFT__() -> ContractAddress {
+    let nft_class_hash = declare("erc721").unwrap().contract_class();
+
+    let mut events_constructor_calldata: Array<felt252> = array![ADMIN];
+    let (nft_contract_address, _) = nft_class_hash.deploy(@events_constructor_calldata).unwrap();
+
+    return (nft_contract_address);
+}
+
+fn __setup__() -> (ContractAddress, ContractAddress) {
+    let class_hash = declare("Weaver").unwrap().contract_class();
+    
+    let nft_address = __deploy_weaver_NFT__();
+
+    let mut calldata = array![];
+    OWNER().serialize(ref calldata);
+    nft_address.serialize(ref calldata);
+    let (contract_address, _) = class_hash.deploy(@calldata).unwrap();
+
+    (contract_address, nft_address)
+}
+
+
 
 #[test]
 fn test_weaver_constructor() {
