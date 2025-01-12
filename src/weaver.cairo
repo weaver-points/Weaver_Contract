@@ -67,12 +67,18 @@ mod Weaver {
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     pub enum Event {
         Upgraded: Upgraded,
+        UserRegistered: UserRegistered,
     }
 
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     pub struct Upgraded {
         pub implementation: ClassHash
+    }
+
+    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    pub struct UserRegistered {
+        pub user: ContractAddress,
     }
 
 
@@ -100,6 +106,7 @@ mod Weaver {
                 contract_address: self.erc721_address.read()
             };
             erc721_dispatcher.safe_mint(get_caller_address(), total_users, [].span());
+            self.emit(Event::UserRegistered(UserRegistered { user: get_caller_address() }));
         }
 
         fn set_erc721(ref self: ContractState, address: ContractAddress) {
