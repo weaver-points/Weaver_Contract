@@ -11,7 +11,7 @@ use snforge_std::{
 };
 
 use core::starknet::{
-    ContractAddress, contract_address_const, get_block_timestamp, get_contract_address
+    ContractAddress, contract_address_const, get_block_timestamp, get_contract_address,
 };
 
 use weaver_contract::weaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
@@ -38,7 +38,7 @@ fn __deploy_weaver_NFT__() -> ContractAddress {
 
 fn __setup__() -> (ContractAddress, ContractAddress) {
     let class_hash = declare("Weaver").unwrap().contract_class();
-    
+
     let nft_address = __deploy_weaver_NFT__();
 
     let mut calldata = array![];
@@ -48,7 +48,6 @@ fn __setup__() -> (ContractAddress, ContractAddress) {
 
     (contract_address, nft_address)
 }
-
 
 
 #[test]
@@ -70,10 +69,10 @@ fn test_weaver_constructor() {
 fn test_registration_check() {
     let weaver_contract_address = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-    
+
     let user: ContractAddress = contract_address_const::<0x123>();
     start_cheat_caller_address(weaver_contract_address, user);
-    
+
     // First registration should succeed
     let details: ByteArray = "Test User";
     weaver_contract.register_User(details);
@@ -81,11 +80,11 @@ fn test_registration_check() {
     let is_registered = weaver_contract.get_register_user(weaver_contract_address);
 
     assert!(is_registered.Details == details, "User should be registered");
-    
-    // Second registration should fail with 'user already registered'
-    let new_details: ByteArray = "Test User";
-    weaver_contract.register_User(new_details);
-    
-    stop_cheat_caller_address(weaver_contract_address);
+
+// Second registration should fail with 'user already registered'
+let new_details: ByteArray = "Test User";
+weaver_contract.register_User(new_details);
+
+stop_cheat_caller_address(weaver_contract_address);
 }
 

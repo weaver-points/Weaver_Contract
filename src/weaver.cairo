@@ -1,6 +1,6 @@
 use core::starknet::ContractAddress;
 use starknet::class_hash::ClassHash;
-use core::fmt::{Debug, Formatter,};
+use core::fmt::{Debug, Formatter};
 
 
 #[starknet::interface]
@@ -41,7 +41,8 @@ mod Weaver {
     use starknet::storage::StoragePointerWriteAccess;
     use super::{User, IERC721EXTDispatcher, IERC721EXTDispatcherTrait};
     use starknet::{
-        SyscallResultTrait, class_hash::ClassHash, storage::Map, ContractAddress, get_caller_address
+        SyscallResultTrait, class_hash::ClassHash, storage::Map, ContractAddress,
+        get_caller_address,
     };
 
     // *************************************************************************
@@ -73,7 +74,7 @@ mod Weaver {
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     pub struct Upgraded {
-        pub implementation: ClassHash
+        pub implementation: ClassHash,
     }
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
@@ -103,7 +104,7 @@ mod Weaver {
             let total_users = self.user_count.read() + 1;
             self.user_count.write(total_users);
             let erc721_dispatcher = IERC721EXTDispatcher {
-                contract_address: self.erc721_address.read()
+                contract_address: self.erc721_address.read(),
             };
             erc721_dispatcher.safe_mint(get_caller_address(), total_users, [].span());
             self.emit(Event::UserRegistered(UserRegistered { user: get_caller_address() }));
