@@ -52,7 +52,7 @@ fn __setup__() -> (ContractAddress, ContractAddress) {
 
 #[test]
 fn test_weaver_constructor() {
-    let weaver_contract_address = __setup__();
+    let (weaver_contract_address, _) = __setup__();
 
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
@@ -67,7 +67,7 @@ fn test_weaver_constructor() {
 #[test]
 #[should_panic(expected: ('user already registered',))]
 fn test_registration_check() {
-    let weaver_contract_address = __setup__();
+    let (weaver_contract_address, _) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
     let user: ContractAddress = contract_address_const::<0x123>();
