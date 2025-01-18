@@ -52,39 +52,33 @@ fn __setup__() -> (ContractAddress, ContractAddress) {
 
 #[test]
 fn test_weaver_constructor() {
-    let (weaver_contract_address, _) = __setup__();
-
+    let (weaver_contract_address, nft_address) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
-    let owner: ContractAddress = weaver_contract.owner();
-    let erc721_contract: ContractAddress = weaver_contract.erc_721();
-
-    assert_eq!(weaver_contract.owner(), owner);
-    assert!(weaver_contract.erc_721() == erc721_contract, "wrong erc721 address");
+    assert_eq!(weaver_contract.owner(), OWNER());
+    assert!(weaver_contract.erc_721() == nft_address, "wrong erc721 address");
 }
 
 
 #[test]
-#[should_panic(expected: ('user already registered',))]
-fn test_registration_check() {
-    let (weaver_contract_address, _) = __setup__();
+#[should_panic(expected: 'user already registered')]
+fn test_already_registered_should_panic() {
+    let (weaver_contract_address, nft_address) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-
-    let user: ContractAddress = contract_address_const::<0x123>();
+    
+    let user: ContractAddress = USER();
     start_cheat_caller_address(weaver_contract_address, user);
 
     // First registration should succeed
     let details: ByteArray = "Test User";
     weaver_contract.register_User(details);
 
-    let is_registered = weaver_contract.get_register_user(weaver_contract_address);
+    let is_registered = weaver_contract.get_register_user(user);
+    assert!(is_registered.Details == "Test User", "User should be registered");
 
-    assert!(is_registered.Details == details, "User should be registered");
+    // Second registration attempt with same address should fail
+    let new_details: ByteArray = "Test User";
+    weaver_contract.register_User(new_details);
 
-// Second registration should fail with 'user already registered'
-let new_details: ByteArray = "Test User";
-weaver_contract.register_User(new_details);
-
-stop_cheat_caller_address(weaver_contract_address);
+    stop_cheat_caller_address(weaver_contract_address);
 }
-
