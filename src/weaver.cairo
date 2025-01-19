@@ -8,6 +8,8 @@ pub trait IERC721EXT<TContractState> {
     fn safe_mint(
         ref self: TContractState, recipient: ContractAddress, token_id: u256, data: Span<felt252>,
     );
+    fn set_weaver_contract(ref self: TContractState, weaver: ContractAddress);
+    fn get_weaver_contract(self: @TContractState) -> ContractAddress;
 }
 
 #[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
