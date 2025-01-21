@@ -7,7 +7,8 @@ mod erc721 {
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc721::ERC721Component;
     use openzeppelin::token::erc721::ERC721HooksEmptyImpl;
-    use starknet::{ContractAddress, get_caller_address};
+    use core::starknet::{ContractAddress, get_caller_address, contract_address_const};
+    use core::starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -29,6 +30,7 @@ mod erc721 {
         src5: SRC5Component::Storage,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        _weaver_contract: ContractAddress, 
     }
 
     #[event]
@@ -46,6 +48,7 @@ mod erc721 {
     fn constructor(ref self: ContractState, owner: ContractAddress) {
         self.erc721.initializer("SPIDERS", "WEBS", "");
         self.ownable.initializer(owner);
+        self._weaver_contract.write(contract_address_const::<0>()); // Initialize to zero
     }
 
     #[generate_trait]
@@ -58,11 +61,22 @@ mod erc721 {
             token_id: u256,
             data: Span<felt252>,
         ) {
-            if get_caller_address()
-                .into() != 0x020800683A6f0A23D1812eae44eA2425CD78D1025d046a2A828F85656432B0cA {
+            let caller = get_caller_address();
+            if caller != self._weaver_contract.read() {
                 self.ownable.assert_only_owner();
             }
             self.erc721.safe_mint(recipient, token_id, data);
+        }
+
+        #[external(v0)]
+        fn set_weaver_contract(ref self: ContractState, weaver: ContractAddress) {
+            self.ownable.assert_only_owner();
+            self._weaver_contract.write(weaver);
+        }
+        
+        #[external(v0)]
+        fn get_weaver_contract(self: @ContractState) -> ContractAddress {
+            self._weaver_contract.read()
         }
 
         #[external(v0)]
