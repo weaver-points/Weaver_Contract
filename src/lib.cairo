@@ -1,2 +1,3 @@
 pub mod weaver;
-pub mod erc721;
+pub mod interfaces;
+pub mod WeaverNFT;
