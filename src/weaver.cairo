@@ -1,33 +1,4 @@
 use core::starknet::ContractAddress;
-use starknet::class_hash::ClassHash;
-use core::fmt::{Debug, Formatter};
-
-
-#[starknet::interface]
-pub trait IERC721EXT<TContractState> {
-    fn safe_mint(
-        ref self: TContractState, recipient: ContractAddress, token_id: u256, data: Span<felt252>,
-    );
-    fn set_weaver_contract(ref self: TContractState, weaver: ContractAddress);
-    fn get_weaver_contract(self: @TContractState) -> ContractAddress;
-}
-
-#[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
-pub struct User {
-    pub Details: ByteArray,
-}
-
-#[starknet::interface]
-pub trait IWeaver<TContractState> {
-    fn register_User(ref self: TContractState, Details: ByteArray);
-    fn set_erc721(ref self: TContractState, address: ContractAddress);
-    fn get_register_user(self: @TContractState, address: ContractAddress) -> User;
-    fn version(self: @TContractState) -> u16;
-    fn upgrade(ref self: TContractState, Imp_hash: ClassHash);
-    fn owner(self: @TContractState) -> ContractAddress;
-    fn erc_721(self: @TContractState) -> ContractAddress;
-}
-
 
 #[starknet::contract]
 mod Weaver {
@@ -41,11 +12,16 @@ mod Weaver {
     use starknet::storage::StorageMapReadAccess;
 
     use starknet::storage::StoragePointerWriteAccess;
-    use super::{User, IERC721EXTDispatcher, IERC721EXTDispatcherTrait};
+   
     use starknet::{
         SyscallResultTrait, class_hash::ClassHash, storage::Map, ContractAddress,
         get_caller_address,
     };
+
+    use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
+    use weaver_contract::interfaces::IWeaver::User;
+    use weaver_contract::interfaces::IWeaver::IWeaver;
+    use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 
     // *************************************************************************
     //                              STORAGE
@@ -54,7 +30,7 @@ mod Weaver {
     #[storage]
     pub struct Storage {
         owner: ContractAddress,
-        erc721_address: ContractAddress,
+        weaver_nft_address: ContractAddress,
         users: Map::<ContractAddress, User>,
         registered: Map::<ContractAddress, bool>,
         // user_index: Map::<u256, ContractAddress>,
@@ -87,10 +63,10 @@ mod Weaver {
 
     #[constructor]
     fn constructor(
-        ref self: ContractState, owner: ContractAddress, erc721_address: ContractAddress,
+        ref self: ContractState, owner: ContractAddress, weavernft_address: ContractAddress,
     ) {
         self.owner.write(owner);
-        self.erc721_address.write(erc721_address);
+        self.weaver_nft_address.write(weavernft_address);
     }
 
     // *************************************************************************
@@ -98,24 +74,24 @@ mod Weaver {
     // *************************************************************************
 
     #[abi(embed_v0)]
-    impl WeaverImpl of super::IWeaver<ContractState> {
+    impl WeaverImpl of IWeaver<ContractState> {
         fn register_User(ref self: ContractState, Details: ByteArray) {
             assert(!self.registered.read(get_caller_address()), 'user already registered');
             self.registered.write(get_caller_address(), true);
             self.users.write(get_caller_address(), User { Details });
             let total_users = self.user_count.read() + 1;
             self.user_count.write(total_users);
-            let erc721_dispatcher = IERC721EXTDispatcher {
-                contract_address: self.erc721_address.read(),
+            let weavernft_dispatcher = IWeaverNFTDispatcher {
+                contract_address: self.weaver_nft_address.read(),
             };
-            erc721_dispatcher.safe_mint(get_caller_address(), total_users, [].span());
+            weavernft_dispatcher.mint_weaver_nft(get_caller_address());
             self.emit(Event::UserRegistered(UserRegistered { user: get_caller_address() }));
         }
 
         fn set_erc721(ref self: ContractState, address: ContractAddress) {
             assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
             assert(address.is_non_zero(), 'INVALID_ADDRESS');
-            self.erc721_address.write(address);
+            self.weaver_nft_address.write(address);
         }
 
         fn get_register_user(self: @ContractState, address: ContractAddress) -> User {
@@ -139,7 +115,7 @@ mod Weaver {
         }
 
         fn erc_721(self: @ContractState) -> ContractAddress {
-            return self.erc721_address.read();
+            return self.weaver_nft_address.read();
         }
     }
 }
