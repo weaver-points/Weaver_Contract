@@ -75,8 +75,8 @@ mod erc721 {
         }
         
         #[external(v0)]
-        fn get_weaver_contract(self: @ContractState) {
-            self._weaver_contract.read();
+        fn get_weaver_contract(self: @ContractState) -> ContractAddress {
+            self._weaver_contract.read()
         }
 
         #[external(v0)]
