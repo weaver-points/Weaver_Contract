@@ -6,10 +6,16 @@ use core::fmt::{Debug, Formatter};
 //                              INTERFACE of  WEAVER
 // *************************************************************************
 
-
 #[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
 pub struct User {
     pub Details: ByteArray,
+}
+
+#[derive(Copy, Drop, Serde, starknet::Store)]
+pub struct TaskInfo {
+    pub task_id: u256,
+    pub user: ContractAddress,
+    pub is_completed: bool,
 }
 
 #[starknet::interface]
@@ -22,4 +28,5 @@ pub trait IWeaver<TContractState> {
     fn owner(self: @TContractState) -> ContractAddress;
     fn erc_721(self: @TContractState) -> ContractAddress;
     fn mint(ref self: TContractState, task_id: u256);
+    fn get_task_info(self: @TContractState, task_id: u256) -> TaskInfo;
 }

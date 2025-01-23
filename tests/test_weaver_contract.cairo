@@ -37,7 +37,6 @@ fn __setup__() -> (ContractAddress, ContractAddress) {
     nft_address.serialize(ref calldata);
     let (contract_address, _) = class_hash.deploy(@calldata).unwrap();
 
-
     (contract_address, nft_address)
 }
 
@@ -84,7 +83,7 @@ fn test_register_user() {
 fn test_already_registered_should_panic() {
     let (weaver_contract_address, _) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-    
+
     let user: ContractAddress = USER();
     start_cheat_caller_address(weaver_contract_address, user);
 
