@@ -19,7 +19,7 @@ mod Weaver {
     };
 
     use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
-    use weaver_contract::interfaces::IWeaver::{User, TaskInfo};
+    use weaver_contract::interfaces::IWeaver::{User, ProtocolInfo, TaskInfo};
     use weaver_contract::interfaces::IWeaver::IWeaver;
     use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 
@@ -37,6 +37,7 @@ mod Weaver {
         user_count: u256,
         version: u16,
         task_registry: Map::<u256, TaskInfo>,
+        protocol_registrations: Map::<ContractAddress, ProtocolInfo>,
     }
 
     // *************************************************************************
@@ -47,6 +48,7 @@ mod Weaver {
     pub enum Event {
         Upgraded: Upgraded,
         UserRegistered: UserRegistered,
+        ProtocolRegistered: ProtocolRegistered,
     }
 
 
@@ -57,6 +59,11 @@ mod Weaver {
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     pub struct UserRegistered {
+        pub user: ContractAddress,
+    }
+
+    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    pub struct ProtocolRegistered {
         pub user: ContractAddress,
     }
 
@@ -142,5 +149,23 @@ mod Weaver {
         fn get_task_info(self: @ContractState, task_id: u256) -> TaskInfo {
             self.task_registry.read(task_id)
         }
+
+
+        fn protocol_register(ref self: ContractState, protocol_name: ByteArray) {
+            assert(protocol_name.len() > 0, 'INVALID_PROTOCOL_NAME');
+
+            let protocol_info = self.protocol_registrations.read(get_caller_address());
+            assert(protocol_info.protocol_name.len() == 0, 'PROTOCOL_ALREADY_REGISTERED');
+            self.protocol_registrations.write(get_caller_address(), ProtocolInfo { protocol_name });
+
+            // Dispatch the mint_weaver_nft call to the NFT contract
+            let weaver_nft_dispatcher = IWeaverNFTDispatcher {
+                contract_address: self.weaver_nft_address.read(),
+            };
+            weaver_nft_dispatcher.mint_weaver_nft(get_caller_address());
+            self.emit(Event::ProtocolRegistered(ProtocolRegistered { user: get_caller_address() }));
+        }
+
+
     }
 }

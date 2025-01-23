@@ -18,6 +18,11 @@ pub struct TaskInfo {
     pub is_completed: bool,
 }
 
+#[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
+pub struct ProtocolInfo {
+    pub protocol_name: ByteArray,
+}
+
 #[starknet::interface]
 pub trait IWeaver<TContractState> {
     fn register_User(ref self: TContractState, Details: ByteArray);
@@ -29,4 +34,6 @@ pub trait IWeaver<TContractState> {
     fn erc_721(self: @TContractState) -> ContractAddress;
     fn mint(ref self: TContractState, task_id: u256);
     fn get_task_info(self: @TContractState, task_id: u256) -> TaskInfo;
+    fn protocol_register(ref self: TContractState, protocol_name: ByteArray);
+    fn get_registered_protocols(self: @TContractState, address: ContractAddress) -> ProtocolInfo;
 }
