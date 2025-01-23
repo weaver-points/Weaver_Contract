@@ -35,5 +35,5 @@ pub trait IWeaver<TContractState> {
     fn mint(ref self: TContractState, task_id: u256);
     fn get_task_info(self: @TContractState, task_id: u256) -> TaskInfo;
     fn protocol_register(ref self: TContractState, protocol_name: ByteArray);
-    fn get_registered_protocols(self: @TContractState, address: ContractAddress) -> ProtocolInfo;
+    // fn get_registered_protocols(self: @TContractState, address: ContractAddress) -> ProtocolInfo;
 }
