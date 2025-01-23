@@ -125,13 +125,9 @@ mod Weaver {
             assert(self.registered.read(caller), 'USER_NOT_REGISTERED');
 
             // Veriy task does not exist
-            assert(!self.task_registry.contains(task_id), 'TASK_ALREADY_EXISTS');
+            assert(!self.task_registry.read(task_id).is_completed, 'TASK_ALREADY_EXISTS');
 
-            let task_info = TaskInfo {
-                task_id,
-                user: caller,
-                is_completed: true,
-            }
+            let task_info = TaskInfo { task_id, user: caller, is_completed: true, };
             self.task_registry.write(task_id, task_info);
 
             // Get NFT contract dispatcher
