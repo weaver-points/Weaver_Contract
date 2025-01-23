@@ -124,11 +124,15 @@ mod Weaver {
             // Verify user is registered
             assert(self.registered.read(caller), 'USER_NOT_REGISTERED');
 
-            // Get and validate task info
-            let task_info = self.task_registry.read(task_id);
-            assert(task_info.task_id == task_id, 'INVALID_TASK_ID');
-            assert(task_info.is_completed, 'TASK_NOT_COMPLETED');
-            assert(task_info.user == caller, 'UNAUTHORIZED_USER');
+            // Veriy task does not exist
+            assert(!self.task_registry.contains(task_id), 'TASK_ALREADY_EXISTS');
+
+            let task_info = TaskInfo {
+                task_id,
+                user: caller,
+                is_completed: true,
+            }
+            self.task_registry.write(task_id, task_info);
 
             // Get NFT contract dispatcher
             let weavernft_dispatcher = IWeaverNFTDispatcher {
