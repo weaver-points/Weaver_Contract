@@ -84,7 +84,7 @@ mod Weaver {
             let weavernft_dispatcher = IWeaverNFTDispatcher {
                 contract_address: self.weaver_nft_address.read(),
             };
-            weavernft_dispatcher.mint_weaver_nft(get_caller_address());
+            weavernft_dispatcher.mint_weaver_nft(0, get_caller_address());
             self.emit(Event::UserRegistered(UserRegistered { user: get_caller_address() }));
         }
 
