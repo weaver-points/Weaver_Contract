@@ -26,16 +26,6 @@ pub mod WeaverNFT {
     impl ERC721InternalImpl = ERC721Component::InternalImpl<ContractState>;
 
     // *************************************************************************
-    //                             STRUCTS
-    // *************************************************************************
-    #[derive(Copy, Drop, Serde, starknet::Store)]
-    struct TaskInfo {
-        task_id: u256,
-        user: ContractAddress,
-        is_completed: bool,
-    }
-
-    // *************************************************************************
     //                             STORAGE
     // *************************************************************************
     #[storage]
@@ -50,8 +40,6 @@ pub mod WeaverNFT {
         last_minted_id: u256,
         mint_timestamp: Map<u256, u64>,
         user_token_id: Map<ContractAddress, u256>,
-        task_registry: Map<u256, TaskInfo>,
-        user_registered: Map<ContractAddress, bool>,
     }
 
     // *************************************************************************
@@ -86,29 +74,12 @@ pub mod WeaverNFT {
         //                            EXTERNAL
         // *************************************************************************
 
-        fn mint_weaver_nft(ref self: ContractState, task_id: u256, address: ContractAddress) {
-            // Validate address
+        fn mint_weaver_nft(ref self: ContractState, address: ContractAddress) {
             assert(address.is_non_zero(), 'INVALID_ADDRESS');
-            
-            // Check if user is registered
-            assert(self.user_registered.read(address), 'USER_NOT_REGISTERED');
-            
-            // Get task info and validate
-            let task_info = self.task_registry.read(task_id);
-            assert(task_info.task_id == task_id, 'INVALID_TASK_ID');
-            assert(task_info.is_completed, 'TASK_NOT_COMPLETED');
-            assert(task_info.user == address, 'UNAUTHORIZED_USER');
-            
-            // Ensure user hasn't already minted
-            let existing_token = self.user_token_id.read(address);
-            assert(existing_token.is_zero(), 'ALREADY_MINTED');
-
-            // Mint NFT
-            let token_id = self.last_minted_id.read() + 1;
+            let mut token_id = self.last_minted_id.read() + 1;
             self.erc721.mint(address, token_id);
             let timestamp: u64 = get_block_timestamp();
 
-            // Update storage
             self.user_token_id.write(address, token_id);
             self.last_minted_id.write(token_id);
             self.mint_timestamp.write(token_id, timestamp);
