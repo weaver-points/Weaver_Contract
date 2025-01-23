@@ -21,4 +21,5 @@ pub trait IWeaver<TContractState> {
     fn upgrade(ref self: TContractState, Imp_hash: ClassHash);
     fn owner(self: @TContractState) -> ContractAddress;
     fn erc_721(self: @TContractState) -> ContractAddress;
+    fn mint(ref self: TContractState, task_id: u256);
 }
