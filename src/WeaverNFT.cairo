@@ -60,11 +60,8 @@ pub mod WeaverNFT {
     #[constructor]
     fn constructor(ref self: ContractState, admin: ContractAddress) {
         self.admin.write(admin);
-        self
-            .erc721
-            .initializer(
-                "SPIDERS", "WEBS", ""  // The pinata URL will be updated soon
-            );
+        self.erc721.initializer("SPIDERS", "WEBS", "" // The pinata URL will be updated soon
+        );
     }
 
 

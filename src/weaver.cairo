@@ -12,14 +12,14 @@ mod Weaver {
     use starknet::storage::StorageMapReadAccess;
 
     use starknet::storage::StoragePointerWriteAccess;
-   
+
     use starknet::{
         SyscallResultTrait, class_hash::ClassHash, storage::Map, ContractAddress,
         get_caller_address,
     };
 
     use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
-    use weaver_contract::interfaces::IWeaver::User;
+    use weaver_contract::interfaces::IWeaver::{User, TaskInfo};
     use weaver_contract::interfaces::IWeaver::IWeaver;
     use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 
@@ -37,16 +37,8 @@ mod Weaver {
         user_count: u256,
         version: u16,
         task_registry: Map::<u256, TaskInfo>,
-
     }
 
-
-    #[derive(Copy, Drop, Serde, starknet::Store)]
-    struct TaskInfo {
-        task_id: u256,
-        user: ContractAddress,
-        is_completed: bool,
-    }
     // *************************************************************************
     //                              EVENTS
     // *************************************************************************
@@ -128,23 +120,27 @@ mod Weaver {
 
         fn mint(ref self: ContractState, task_id: u256) {
             let caller = get_caller_address();
-            
+
             // Verify user is registered
             assert(self.registered.read(caller), 'USER_NOT_REGISTERED');
-            
+
             // Get and validate task info
             let task_info = self.task_registry.read(task_id);
             assert(task_info.task_id == task_id, 'INVALID_TASK_ID');
             assert(task_info.is_completed, 'TASK_NOT_COMPLETED');
             assert(task_info.user == caller, 'UNAUTHORIZED_USER');
-            
+
             // Get NFT contract dispatcher
             let weavernft_dispatcher = IWeaverNFTDispatcher {
                 contract_address: self.weaver_nft_address.read(),
             };
-            
+
             // Mint NFT to user
             weavernft_dispatcher.mint_weaver_nft(caller);
+        }
+
+        fn get_task_info(self: @ContractState, task_id: u256) -> TaskInfo {
+            self.task_registry.read(task_id)
         }
     }
 }
