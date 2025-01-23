@@ -166,10 +166,6 @@ mod Weaver {
             self.emit(Event::ProtocolRegistered(ProtocolRegistered { user: get_caller_address() }));
         }
 
-        fn get_registered_protocols(
-            self: @ContractState, address: ContractAddress
-        ) -> ProtocolInfo {
-            return self.protocol_registrations.read(address);
-        }
+
     }
 }
