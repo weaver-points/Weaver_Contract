@@ -160,3 +160,18 @@ fn test_protocol_register_already_registered() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+#[test]
+#[should_panic(expected: 'INVALID_PROTOCOL_NAME')]
+fn test_invalid_protocol_name_should_panic() {
+    let (weaver_contract_address, _) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let user: ContractAddress = USER();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let invalid_protocol_name: ByteArray = ""; // Empty protocol name
+    weaver_contract.protocol_register(invalid_protocol_name);
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
