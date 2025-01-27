@@ -100,3 +100,20 @@ fn test_already_registered_should_panic() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+#[test]
+fn test_protocol_register() {
+    let (weaver_contract_address, nft_address) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let user: ContractAddress = USER();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let protocol_name: ByteArray = "Weaver Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    let protocol_info = weaver_contract.get_registered_protocols(user);
+    assert!(protocol_info.protocol_name == "Weaver Protocol", "Protocol should be registered");
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
