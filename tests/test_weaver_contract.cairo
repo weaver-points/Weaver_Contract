@@ -143,3 +143,20 @@ fn test_nft_minted_on_protocol_register() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+#[test]
+#[should_panic(expected: 'PROTOCOL_ALREADY_REGISTERED')]
+fn test_protocol_register_already_registered() {
+    let (weaver_contract_address, nft_address) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let user: ContractAddress = USER();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let protocol_name: ByteArray = "Weaver Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    weaver_contract.protocol_register("Weaver Protocol");
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
