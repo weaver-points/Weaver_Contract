@@ -117,3 +117,29 @@ fn test_protocol_register() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+#[test]
+fn test_nft_minted_on_protocol_register() {
+    let (weaver_contract_address, nft_address) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
+
+    let user: ContractAddress = USER();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let protocol_name: ByteArray = "Weaver Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    let minted_token_id = nft_dispatcher.get_user_token_id(user);
+    assert!(minted_token_id > 0, "NFT NOT Minted!");
+
+   
+    let last_minted_id = nft_dispatcher.get_last_minted_id();
+    assert_eq!(minted_token_id, last_minted_id, "Minted token ID should match the last minted ID");
+
+    let mint_timestamp = nft_dispatcher.get_token_mint_timestamp(minted_token_id);
+    let current_block_timestamp = get_block_timestamp();
+    assert_eq!(mint_timestamp, current_block_timestamp, "Mint timestamp not matched");
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
