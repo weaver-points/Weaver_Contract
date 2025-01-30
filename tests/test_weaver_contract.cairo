@@ -175,3 +175,49 @@ fn test_invalid_protocol_name_should_panic() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+#[test]
+fn test_mint_nft() {
+    let (weaver_contract_address, nft_address) = __setup__();
+    
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
+
+    let user: ContractAddress = USER();
+
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let details: ByteArray = "Test User";
+
+    weaver_contract.register_User(details);
+
+    let is_registered = weaver_contract.get_register_user(user);
+
+    assert!(is_registered.Details == "Test User", "User should be registered");
+
+    let protocol_name: ByteArray = "Weaver Protocol";
+
+    weaver_contract.protocol_register(protocol_name);
+
+    let protocol_info = weaver_contract.get_registered_protocols(user);
+
+    assert!(protocol_info.protocol_name == "Weaver Protocol", "Protocol should be registered");
+
+    let task_id = 1;
+
+    let mut task_info = weaver_contract.get_task_info(task_id);
+
+    task_info.is_completed = true;
+
+    assert!(task_info.is_completed, "Task should be completed");
+
+    assert!(task_info.task_id == task_id, "Task ID should match");
+
+    weaver_contract.mint(task_id);
+
+
+    let minted_token_id = nft_dispatcher.get_user_token_id(user);
+
+    assert!(minted_token_id > 0, "NFT NOT Minted!");
+}
