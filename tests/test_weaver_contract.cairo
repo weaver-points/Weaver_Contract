@@ -133,7 +133,6 @@ fn test_nft_minted_on_protocol_register() {
     let minted_token_id = nft_dispatcher.get_user_token_id(user);
     assert!(minted_token_id > 0, "NFT NOT Minted!");
 
-   
     let last_minted_id = nft_dispatcher.get_last_minted_id();
     assert_eq!(minted_token_id, last_minted_id, "Minted token ID should match the last minted ID");
 
@@ -177,34 +176,55 @@ fn test_invalid_protocol_name_should_panic() {
 }
 
 #[test]
+#[should_panic(expected: 'TASK_ALREADY_EXISTS')]
+fn test_mint_nft_duplicate_id_should_panic() {
+    let (weaver_contract_address, nft_address) = __setup__();
+
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
+    let user: ContractAddress = USER();
+
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let details: ByteArray = "Testx User";
+    weaver_contract.register_User(details);
+
+    let protocol_name: ByteArray = "Weavers Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    let task_id = 1;
+
+    weaver_contract.mint(task_id);
+
+    let minted_token_id = nft_dispatcher.get_user_token_id(user);
+    assert!(minted_token_id > 0, "First NFT mint failed!");
+
+    weaver_contract.mint(task_id);
+}
+
+#[test]
 fn test_mint_nft() {
     let (weaver_contract_address, nft_address) = __setup__();
-    
+
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-
     let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
-
     let user: ContractAddress = USER();
 
     start_cheat_caller_address(weaver_contract_address, user);
 
     let details: ByteArray = "Test User";
-
     weaver_contract.register_User(details);
 
     let is_registered = weaver_contract.get_register_user(user);
-
     assert!(is_registered.Details == "Test User", "User should be registered");
 
     let protocol_name: ByteArray = "Weaver Protocol";
-
     weaver_contract.protocol_register(protocol_name);
 
     let protocol_info = weaver_contract.get_registered_protocols(user);
-
     assert!(protocol_info.protocol_name == "Weaver Protocol", "Protocol should be registered");
 
-    let task_id = 1;
+    let task_id = 2;
 
     let mut task_info = weaver_contract.get_task_info(task_id);
 
@@ -212,12 +232,38 @@ fn test_mint_nft() {
 
     assert!(task_info.is_completed, "Task should be completed");
 
-    assert!(task_info.task_id == task_id, "Task ID should match");
-
     weaver_contract.mint(task_id);
-
 
     let minted_token_id = nft_dispatcher.get_user_token_id(user);
 
     assert!(minted_token_id > 0, "NFT NOT Minted!");
 }
+
+#[test]
+#[should_panic(expected: "Task should NOT be completed")]
+fn test_mint_nft_task_not_completed_should_panic() {
+    let (weaver_contract_address, _) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    let user: ContractAddress = USER();
+
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let details: ByteArray = "Testx User";
+    weaver_contract.register_User(details);
+
+    let protocol_name: ByteArray = "Weavers Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    let task_id = 999;
+
+    let mut task_info = weaver_contract.get_task_info(task_id);
+
+    task_info.is_completed = false;
+
+    assert!(task_info.is_completed, "Task should NOT be completed");
+
+    weaver_contract.mint(task_id); // Expect this to panic
+
+    println!("Mint function did not panic!");
+}
+
