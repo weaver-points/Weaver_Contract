@@ -262,7 +262,7 @@ fn test_mint_nft_task_not_completed_should_panic() {
 
     assert!(task_info.is_completed, "Task should NOT be completed");
 
-    weaver_contract.mint(task_id); // Expect this to panic
+    weaver_contract.mint(task_id);
 
     println!("Mint function did not panic!");
 }
