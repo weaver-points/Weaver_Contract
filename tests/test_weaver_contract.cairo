@@ -102,6 +102,21 @@ fn test_already_registered_should_panic() {
 }
 
 #[test]
+#[should_panic(expected: 'USER_NOT_REGISTERED')] // Case-sensitive match
+fn test_mint_unregistered_user_panics() {
+    let (weaver_contract_address, _) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let unregistered_user = USER(); // Uses the numeric address now
+    start_cheat_caller_address(weaver_contract_address, unregistered_user);
+
+    // This should panic with USER_NOT_REGISTERED
+    weaver_contract.mint(1);
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
+
+#[test]
 fn test_protocol_register() {
     let (weaver_contract_address, nft_address) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
