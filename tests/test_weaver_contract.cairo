@@ -267,3 +267,30 @@ fn test_mint_nft_task_not_completed_should_panic() {
     println!("Mint function did not panic!");
 }
 
+#[test]
+#[should_panic(expected: 'TASK_ALREADY_EXISTS')]
+fn test_mint_task_already_exists() {
+    let (weaver_contract_address, nft_address) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    let user: ContractAddress = USER();
+
+    // Set up the caller address
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    // Register user first (required)
+    let details: ByteArray = "Test User";
+    weaver_contract.register_User(details);
+
+    // Register protocol (required before minting)
+    let protocol_name: ByteArray = "Test Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    // First mint should succeed
+    let task_id = 1;
+    weaver_contract.mint(task_id);
+
+    // Second mint with same task_id should panic
+    weaver_contract.mint(task_id);
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
