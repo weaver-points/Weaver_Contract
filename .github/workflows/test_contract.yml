@@ -1,6 +1,13 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main  # or the branch you want to monitor for commits
+  pull_request:
+    branches:
+      - main  # or the branch for which you want PR testing
+  # Optional: Add on: [commit] to test specifically on commit
 permissions: read-all
 
 jobs:

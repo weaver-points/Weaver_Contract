@@ -283,6 +283,66 @@ fn test_mint_nft_task_not_completed_should_panic() {
 }
 
 #[test]
+fn test_mint_nft_after_task_completed() {
+    // Set up the contracts
+    let (weaver_contract_address, nft_address) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
+
+    // Define the user address
+    let user: ContractAddress = USER();
+
+    // Start the contract as the user
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    // Register the user
+    let details: ByteArray = "Test User";
+    weaver_contract.register_User(details);
+
+    // Verify user registration
+    let is_registered = weaver_contract.get_register_user(user);
+    assert!(is_registered.Details == "Test User", "User should be registered");
+
+    // Register the protocol
+    let protocol_name: ByteArray = "Weaver Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    // Verify protocol registration
+    let protocol_info = weaver_contract.get_registered_protocols(user);
+    assert!(protocol_info.protocol_name == "Weaver Protocol", "Protocol should be registered");
+
+    // Define the task ID to mint
+    let task_id = 1;
+
+    // Retrieve and mark the task as completed
+    let mut task_info = weaver_contract.get_task_info(task_id);
+    task_info.is_completed = true;
+
+    // Ensure task is completed
+    assert!(task_info.is_completed, "Task should be completed");
+
+    // Now, mint the NFT for the task
+    weaver_contract.mint(task_id);
+
+    // Get the minted token ID for the user
+    let minted_token_id = nft_dispatcher.get_user_token_id(user);
+    assert!(minted_token_id > 0, "NFT NOT Minted!");
+
+    // Ensure that the minted token ID matches the last minted ID
+    let last_minted_id = nft_dispatcher.get_last_minted_id();
+    assert_eq!(minted_token_id, last_minted_id, "Minted token ID should match the last minted ID");
+
+    // Ensure the mint timestamp is correct
+    let mint_timestamp = nft_dispatcher.get_token_mint_timestamp(minted_token_id);
+    let current_block_timestamp = get_block_timestamp();
+    assert_eq!(mint_timestamp, current_block_timestamp, "Mint timestamp does not match");
+
+    // Stop the contract after the test
+    stop_cheat_caller_address(weaver_contract_address);
+}
+
+
+#[test]
 #[should_panic(expected: 'TASK_ALREADY_EXISTS')]
 fn test_mint_task_already_exists() {
     let (weaver_contract_address, nft_address) = __setup__();
@@ -309,3 +369,5 @@ fn test_mint_task_already_exists() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+// This is a comment
