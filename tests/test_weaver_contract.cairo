@@ -5,13 +5,13 @@ use core::byte_array::ByteArray;
 
 use snforge_std::{
     declare, start_cheat_caller_address, stop_cheat_caller_address, ContractClassTrait,
-    DeclareResultTrait, spy_events, EventSpyAssertionsTrait, get_class_hash
+    DeclareResultTrait, spy_events, EventSpyAssertionsTrait
 };
 
 use starknet::{ContractAddress, get_block_timestamp};
 
 use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
-use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
+use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
 use weaver_contract::weaver::Weaver::{Event};
 use weaver_contract::weaver::Weaver::{UserRegistered, ProtocolRegistered, TaskMinted};
 
@@ -140,7 +140,7 @@ fn test_mint_unregistered_user_panics() {
 
 #[test]
 fn test_protocol_register() {
-    let (weaver_contract_address, nft_address) = __setup__();
+    let (weaver_contract_address, _) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
     let user: ContractAddress = USER();
@@ -158,7 +158,7 @@ fn test_protocol_register() {
 
 #[test]
 fn test_protocol_register_emit_event() {
-    let (weaver_contract_address, nft_address) = __setup__();
+    let (weaver_contract_address, _) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
     let user: ContractAddress = USER();
@@ -206,7 +206,7 @@ fn test_nft_minted_on_protocol_register() {
 #[test]
 #[should_panic(expected: 'PROTOCOL_ALREADY_REGISTERED')]
 fn test_protocol_register_already_registered() {
-    let (weaver_contract_address, nft_address) = __setup__();
+    let (weaver_contract_address, _) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
     let user: ContractAddress = USER();
@@ -395,7 +395,7 @@ fn test_mint_nft_after_task_completed() {
 #[test]
 #[should_panic(expected: 'TASK_ALREADY_EXISTS')]
 fn test_mint_task_already_exists() {
-    let (weaver_contract_address, nft_address) = __setup__();
+    let (weaver_contract_address, _) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
     let user: ContractAddress = USER();
 
