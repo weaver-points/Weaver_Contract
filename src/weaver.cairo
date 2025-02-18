@@ -1,7 +1,7 @@
 use core::starknet::ContractAddress;
 
 #[starknet::contract]
-mod Weaver {
+pub mod Weaver {
     // *************************************************************************
     //                            IMPORT
     // *************************************************************************
@@ -44,7 +44,7 @@ mod Weaver {
     //                              EVENTS
     // *************************************************************************
     #[event]
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    #[derive(Copy, Drop, starknet::Event)]
     pub enum Event {
         Upgraded: Upgraded,
         UserRegistered: UserRegistered,

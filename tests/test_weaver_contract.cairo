@@ -1,8 +1,6 @@
 use core::option::OptionTrait;
-use core::starknet::SyscallResultTrait;
-use starknet::testing::set_block_timestamp;
 use core::result::ResultTrait;
-use core::traits::{TryInto, Into};
+use core::traits::{TryInto};
 use core::byte_array::ByteArray;
 
 use snforge_std::{
@@ -10,12 +8,14 @@ use snforge_std::{
     DeclareResultTrait, spy_events, EventSpyAssertionsTrait, get_class_hash
 };
 
-use openzeppelin::{token::erc721::interface::{ERC721ABIDispatcher, ERC721ABIDispatcherTrait}};
-
-use starknet::{ContractAddress, ClassHash, get_block_timestamp};
+use starknet::{ContractAddress, get_block_timestamp};
 
 use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
+use weaver_contract::weaver::Weaver::{Event};
+use weaver_contract::weaver::Weaver::{UserRegistered};
+
+
 
 const ADMIN: felt252 = 'ADMIN';
 
@@ -76,6 +76,33 @@ fn test_register_user() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+
+#[test]
+fn test_register_user_emit_event() {
+    let (weaver_contract_address, _) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let mut spy = spy_events();
+
+    let user: ContractAddress = USER();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let details: ByteArray = "Test User";
+    weaver_contract.register_User(details);
+
+    let is_registered = weaver_contract.get_register_user(user);
+    assert!(is_registered.Details == "Test User", "User should be registered");
+
+    // let expected_event = Event::UserRegistered(UserRegistered { user: user});
+    // spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
+
+    let expected_event = Event::UserRegistered(UserRegistered{user: user});
+    spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
+
 
 
 #[test]
@@ -369,5 +396,3 @@ fn test_mint_task_already_exists() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
-
-// This is a comment

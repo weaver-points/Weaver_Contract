@@ -19,6 +19,13 @@ sierra = true
 [scripts]
 test = "snforge test"
 
+
+[profile.dev.cairo]
+unstable-add-statements-code-locations-debug-info = true
+unstable-add-statements-functions-debug-info = true
+
+
+
 # Visit https://foundry-rs.github.io/starknet-foundry/appendix/scarb-toml.html for more information
 
 # [tool.snforge]                                             # Define `snforge` tool section
