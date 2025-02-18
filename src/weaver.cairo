@@ -103,14 +103,6 @@ pub mod Weaver {
             self.emit(Event::UserRegistered(UserRegistered { user: get_caller_address() }));
         }
 
-        fn set_erc721(ref self: ContractState, address: ContractAddress) {
-            assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
-            assert(address.is_non_zero(), 'INVALID_ADDRESS');
-            self.weaver_nft_address.write(address);
-        }
-
-      
-
     
         fn mint(ref self: ContractState, task_id: u256) {
             let caller = get_caller_address();
@@ -151,9 +143,7 @@ pub mod Weaver {
             self.emit(Event::ProtocolRegistered(ProtocolRegistered { user: get_caller_address() }));
         }
 
-        fn get_registered_protocols(self: @ContractState, address: ContractAddress) -> ProtocolInfo {
-            self.protocol_registrations.read(address)
-        }
+
 
 
         // Getter functions
@@ -174,6 +164,10 @@ pub mod Weaver {
             self.task_registry.read(task_id)
         }
 
+        fn get_registered_protocols(self: @ContractState, address: ContractAddress) -> ProtocolInfo {
+            self.protocol_registrations.read(address)
+        }
+
 
 
         //Utility functions
@@ -188,6 +182,13 @@ pub mod Weaver {
             starknet::syscalls::replace_class_syscall(Imp_hash).unwrap_syscall();
             self.version.write(self.version.read() + 1);
             self.emit(Event::Upgraded(Upgraded { implementation: Imp_hash }));
+        }
+       
+
+        fn set_erc721(ref self: ContractState, address: ContractAddress) {
+            assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
+            assert(address.is_non_zero(), 'INVALID_ADDRESS');
+            self.weaver_nft_address.write(address);
         }
 
 
