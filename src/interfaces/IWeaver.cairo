@@ -1,6 +1,5 @@
 use starknet::ContractAddress;
 use starknet::class_hash::ClassHash;
-use core::fmt::{Debug, Formatter};
 
 // *************************************************************************
 //                              INTERFACE of  WEAVER

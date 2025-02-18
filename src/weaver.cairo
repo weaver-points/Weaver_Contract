@@ -1,4 +1,4 @@
-use core::starknet::ContractAddress;
+
 
 #[starknet::contract]
 pub mod Weaver {
@@ -18,7 +18,6 @@ pub mod Weaver {
         get_caller_address,
     };
 
-    use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
     use weaver_contract::interfaces::IWeaver::{User, ProtocolInfo, TaskInfo};
     use weaver_contract::interfaces::IWeaver::IWeaver;
     use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
