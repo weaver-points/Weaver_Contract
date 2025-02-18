@@ -49,6 +49,7 @@ pub mod Weaver {
         Upgraded: Upgraded,
         UserRegistered: UserRegistered,
         ProtocolRegistered: ProtocolRegistered,
+        TaskMinted: TaskMinted,
     }
 
 
@@ -64,6 +65,13 @@ pub mod Weaver {
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     pub struct ProtocolRegistered {
+        pub user: ContractAddress,
+    }
+
+
+    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    pub struct TaskMinted {
+        pub task_id: u256,
         pub user: ContractAddress,
     }
 
@@ -101,30 +109,9 @@ pub mod Weaver {
             self.weaver_nft_address.write(address);
         }
 
-        fn get_register_user(self: @ContractState, address: ContractAddress) -> User {
-            return self.users.read(address);
-        }
+      
 
-        fn version(self: @ContractState) -> u16 {
-            return self.version.read();
-        }
-
-        fn upgrade(ref self: ContractState, Imp_hash: ClassHash) {
-            assert(Imp_hash.is_non_zero(), 'Clash Hasd Cannot be Zero');
-            assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
-            starknet::syscalls::replace_class_syscall(Imp_hash).unwrap_syscall();
-            self.version.write(self.version.read() + 1);
-            self.emit(Event::Upgraded(Upgraded { implementation: Imp_hash }));
-        }
-
-        fn owner(self: @ContractState) -> ContractAddress {
-            return self.owner.read();
-        }
-
-        fn erc_721(self: @ContractState) -> ContractAddress {
-            return self.weaver_nft_address.read();
-        }
-
+    
         fn mint(ref self: ContractState, task_id: u256) {
             let caller = get_caller_address();
 
@@ -144,12 +131,10 @@ pub mod Weaver {
 
             // Mint NFT to user
             weavernft_dispatcher.mint_weaver_nft(caller);
+            self.emit(Event::TaskMinted(TaskMinted { task_id, user: caller }));
         }
 
-        fn get_task_info(self: @ContractState, task_id: u256) -> TaskInfo {
-            self.task_registry.read(task_id)
-        }
-
+     
 
         fn protocol_register(ref self: ContractState, protocol_name: ByteArray) {
             assert(protocol_name.len() > 0, 'INVALID_PROTOCOL_NAME');
@@ -169,6 +154,44 @@ pub mod Weaver {
         fn get_registered_protocols(self: @ContractState, address: ContractAddress) -> ProtocolInfo {
             self.protocol_registrations.read(address)
         }
+
+
+        // Getter functions
+
+        fn owner(self: @ContractState) -> ContractAddress {
+            return self.owner.read();
+        }
+
+        fn erc_721(self: @ContractState) -> ContractAddress {
+            return self.weaver_nft_address.read();
+        }
+
+        fn get_register_user(self: @ContractState, address: ContractAddress) -> User {
+            return self.users.read(address);
+        }
+
+        fn get_task_info(self: @ContractState, task_id: u256) -> TaskInfo {
+            self.task_registry.read(task_id)
+        }
+
+
+
+        //Utility functions
+
+        fn version(self: @ContractState) -> u16 {
+            return self.version.read();
+        }
+
+        fn upgrade(ref self: ContractState, Imp_hash: ClassHash) {
+            assert(Imp_hash.is_non_zero(), 'Clash Hasd Cannot be Zero');
+            assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
+            starknet::syscalls::replace_class_syscall(Imp_hash).unwrap_syscall();
+            self.version.write(self.version.read() + 1);
+            self.emit(Event::Upgraded(Upgraded { implementation: Imp_hash }));
+        }
+
+
+
 
     }
 }

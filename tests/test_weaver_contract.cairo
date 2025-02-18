@@ -13,7 +13,7 @@ use starknet::{ContractAddress, get_block_timestamp};
 use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
 use weaver_contract::weaver::Weaver::{Event};
-use weaver_contract::weaver::Weaver::{UserRegistered};
+use weaver_contract::weaver::Weaver::{UserRegistered , ProtocolRegistered};
 
 
 
@@ -94,9 +94,6 @@ fn test_register_user_emit_event() {
     let is_registered = weaver_contract.get_register_user(user);
     assert!(is_registered.Details == "Test User", "User should be registered");
 
-    // let expected_event = Event::UserRegistered(UserRegistered { user: user});
-    // spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
-
     let expected_event = Event::UserRegistered(UserRegistered{user: user});
     spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
 
@@ -159,6 +156,32 @@ fn test_protocol_register() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+
+#[test]
+fn test_protocol_register_emit_event() {
+    let (weaver_contract_address, nft_address) = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+
+    let user: ContractAddress = USER();
+    let mut spy = spy_events();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let protocol_name: ByteArray = "Weaver Protocol";
+    weaver_contract.protocol_register(protocol_name);
+
+    let protocol_info = weaver_contract.get_registered_protocols(user);
+    assert!(protocol_info.protocol_name == "Weaver Protocol", "Protocol should be registered");
+
+    let expected_event = Event::ProtocolRegistered(ProtocolRegistered{user: user});
+    spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
+
+
+
+
 
 #[test]
 fn test_nft_minted_on_protocol_register() {
