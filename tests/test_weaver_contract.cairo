@@ -13,8 +13,7 @@ use starknet::{ContractAddress, get_block_timestamp};
 use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait, User};
 use weaver_contract::weaver::Weaver::{Event};
-use weaver_contract::weaver::Weaver::{UserRegistered , ProtocolRegistered , TaskMinted};
-
+use weaver_contract::weaver::Weaver::{UserRegistered, ProtocolRegistered, TaskMinted};
 
 
 const ADMIN: felt252 = 'ADMIN';
@@ -94,12 +93,11 @@ fn test_register_user_emit_event() {
     let is_registered = weaver_contract.get_register_user(user);
     assert!(is_registered.Details == "Test User", "User should be registered");
 
-    let expected_event = Event::UserRegistered(UserRegistered{user: user});
+    let expected_event = Event::UserRegistered(UserRegistered { user: user });
     spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
 
     stop_cheat_caller_address(weaver_contract_address);
 }
-
 
 
 #[test]
@@ -173,14 +171,11 @@ fn test_protocol_register_emit_event() {
     let protocol_info = weaver_contract.get_registered_protocols(user);
     assert!(protocol_info.protocol_name == "Weaver Protocol", "Protocol should be registered");
 
-    let expected_event = Event::ProtocolRegistered(ProtocolRegistered{user: user});
+    let expected_event = Event::ProtocolRegistered(ProtocolRegistered { user: user });
     spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
 
     stop_cheat_caller_address(weaver_contract_address);
 }
-
-
-
 
 
 #[test]
@@ -301,7 +296,7 @@ fn test_mint_nft() {
 
     assert!(minted_token_id > 0, "NFT NOT Minted!");
 
-    let expected_event = Event::TaskMinted(TaskMinted{ task_id:task_id, user: user });
+    let expected_event = Event::TaskMinted(TaskMinted { task_id: task_id, user: user });
     spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
 
     stop_cheat_caller_address(weaver_contract_address);
@@ -427,7 +422,7 @@ fn test_mint_task_already_exists() {
 
 
 #[test]
-fn test_nft_was_minted_after_user_registers(){
+fn test_nft_was_minted_after_user_registers() {
     let (weaver_contract_address, nft_address) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
     let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
@@ -449,12 +444,11 @@ fn test_nft_was_minted_after_user_registers(){
     assert_eq!(mint_timestamp, current_block_timestamp, "Mint timestamp not matched");
 
     stop_cheat_caller_address(weaver_contract_address);
-
 }
 
 
 #[test]
-fn test_nft_was_minted_after_protocol_registers(){
+fn test_nft_was_minted_after_protocol_registers() {
     let (weaver_contract_address, nft_address) = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
     let nft_dispatcher = IWeaverNFTDispatcher { contract_address: nft_address };
@@ -476,5 +470,4 @@ fn test_nft_was_minted_after_protocol_registers(){
     assert_eq!(mint_timestamp, current_block_timestamp, "Mint timestamp not matched");
 
     stop_cheat_caller_address(weaver_contract_address);
-
 }

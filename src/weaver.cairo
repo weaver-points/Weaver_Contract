@@ -103,7 +103,7 @@ pub mod Weaver {
             self.emit(Event::UserRegistered(UserRegistered { user: get_caller_address() }));
         }
 
-    
+
         fn mint(ref self: ContractState, task_id: u256) {
             let caller = get_caller_address();
 
@@ -126,7 +126,6 @@ pub mod Weaver {
             self.emit(Event::TaskMinted(TaskMinted { task_id, user: caller }));
         }
 
-     
 
         fn protocol_register(ref self: ContractState, protocol_name: ByteArray) {
             assert(protocol_name.len() > 0, 'INVALID_PROTOCOL_NAME');
@@ -142,8 +141,6 @@ pub mod Weaver {
             weaver_nft_dispatcher.mint_weaver_nft(get_caller_address());
             self.emit(Event::ProtocolRegistered(ProtocolRegistered { user: get_caller_address() }));
         }
-
-
 
 
         // Getter functions
@@ -164,10 +161,11 @@ pub mod Weaver {
             self.task_registry.read(task_id)
         }
 
-        fn get_registered_protocols(self: @ContractState, address: ContractAddress) -> ProtocolInfo {
+        fn get_registered_protocols(
+            self: @ContractState, address: ContractAddress
+        ) -> ProtocolInfo {
             self.protocol_registrations.read(address)
         }
-
 
 
         //Utility functions
@@ -183,16 +181,12 @@ pub mod Weaver {
             self.version.write(self.version.read() + 1);
             self.emit(Event::Upgraded(Upgraded { implementation: Imp_hash }));
         }
-       
+
 
         fn set_erc721(ref self: ContractState, address: ContractAddress) {
             assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
             assert(address.is_non_zero(), 'INVALID_ADDRESS');
             self.weaver_nft_address.write(address);
         }
-
-
-
-
     }
 }
