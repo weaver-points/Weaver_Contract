@@ -1,5 +1,3 @@
-
-
 #[starknet::contract]
 pub mod Weaver {
     // *************************************************************************
@@ -76,11 +74,8 @@ pub mod Weaver {
 
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState, owner: ContractAddress, weavernft_address: ContractAddress,
-    ) {
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
         self.owner.write(owner);
-        self.weaver_nft_address.write(weavernft_address);
     }
 
     // *************************************************************************
@@ -112,7 +107,7 @@ pub mod Weaver {
             // Veriy task does not exist
             assert(!self.task_registry.read(task_id).is_completed, 'TASK_ALREADY_EXISTS');
 
-            let task_info = TaskInfo { task_id, user: caller, is_completed: true, };
+            let task_info = TaskInfo { task_id, user: caller, is_completed: true };
             self.task_registry.write(task_id, task_info);
 
             // Get NFT contract dispatcher
@@ -161,7 +156,7 @@ pub mod Weaver {
         }
 
         fn get_registered_protocols(
-            self: @ContractState, address: ContractAddress
+            self: @ContractState, address: ContractAddress,
         ) -> ProtocolInfo {
             self.protocol_registrations.read(address)
         }
