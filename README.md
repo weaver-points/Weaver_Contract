@@ -1,0 +1,1 @@
+Weaver is an on-chain identity solution built within the Starknet ecosystem. It acts as a digital passport that verifies and showcases users' authenticity and contributions across various Starknet protocols.
