@@ -13,7 +13,7 @@ pub mod WeaverNFT {
         Map, StoragePointerWriteAccess, StoragePointerReadAccess, StorageMapReadAccess,
         StorageMapWriteAccess
     };
-    use weaver_contract::interfaces::IWeaverNFT;
+    use crate::mods::interfaces::IWeaverNFT;
 
     // *************************************************************************
     //                             COMPONENTS

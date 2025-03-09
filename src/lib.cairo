@@ -1,3 +1,1 @@
-pub mod weaver;
-pub mod interfaces;
-pub mod WeaverNFT;
+pub mod mods;

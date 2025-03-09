@@ -10,10 +10,11 @@ use snforge_std::{
 
 use starknet::{ContractAddress, get_block_timestamp};
 
-use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
-use weaver_contract::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
-use weaver_contract::weaver::Weaver::{Event};
-use weaver_contract::weaver::Weaver::{UserRegistered, ProtocolRegistered, TaskMinted};
+use weaver_contract::mods::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
+use weaver_contract::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
+use weaver_contract::mods::events::{UserRegistered, ProtocolRegistered, TaskMinted};
+use weaver_contract::mods::weaver_contract::weaver::Weaver::{Event};
+
 
 
 fn OWNER() -> ContractAddress {
@@ -100,7 +101,7 @@ fn test_register_user_emit_event() {
 
 
 #[test]
-#[should_panic(expected: 'user already registered')]
+#[should_panic(expected: 'USER_ALREADY_REGISTERED')]
 fn test_already_registered_should_panic() {
     let weaver_contract_address = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };

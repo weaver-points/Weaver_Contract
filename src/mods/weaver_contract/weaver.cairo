@@ -16,9 +16,11 @@ pub mod Weaver {
         get_caller_address,
     };
 
-    use weaver_contract::interfaces::IWeaver::{User, ProtocolInfo, TaskInfo};
-    use weaver_contract::interfaces::IWeaver::IWeaver;
-    use weaver_contract::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
+    use crate::mods::types::{ProtocolInfo, TaskInfo, User};
+    use crate::mods::events::{ProtocolRegistered, TaskMinted, Upgraded, UserRegistered};
+    use crate::mods::errors::Errors;
+    use crate::mods::interfaces::IWeaver::IWeaver;
+    use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher,IWeaverNFTDispatcherTrait};
 
     // *************************************************************************
     //                              STORAGE
@@ -50,27 +52,6 @@ pub mod Weaver {
     }
 
 
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
-    pub struct Upgraded {
-        pub implementation: ClassHash,
-    }
-
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
-    pub struct UserRegistered {
-        pub user: ContractAddress,
-    }
-
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
-    pub struct ProtocolRegistered {
-        pub user: ContractAddress,
-    }
-
-
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
-    pub struct TaskMinted {
-        pub task_id: u256,
-        pub user: ContractAddress,
-    }
 
 
     #[constructor]
@@ -85,7 +66,7 @@ pub mod Weaver {
     #[abi(embed_v0)]
     impl WeaverImpl of IWeaver<ContractState> {
         fn register_User(ref self: ContractState, Details: ByteArray) {
-            assert(!self.registered.read(get_caller_address()), 'user already registered');
+            assert(!self.registered.read(get_caller_address()), Errors::USER_ALREADY_REGISTERED);
             self.registered.write(get_caller_address(), true);
             self.users.write(get_caller_address(), User { Details });
             let total_users = self.user_count.read() + 1;
@@ -102,10 +83,10 @@ pub mod Weaver {
             let caller = get_caller_address();
 
             // Verify user is registered
-            assert(self.registered.read(caller), 'USER_NOT_REGISTERED');
+            assert(self.registered.read(caller), Errors::USER_NOT_REGISTERED);
 
             // Veriy task does not exist
-            assert(!self.task_registry.read(task_id).is_completed, 'TASK_ALREADY_EXISTS');
+            assert(!self.task_registry.read(task_id).is_completed, Errors::TASK_ALREADY_EXISTS);
 
             let task_info = TaskInfo { task_id, user: caller, is_completed: true };
             self.task_registry.write(task_id, task_info);
@@ -122,10 +103,10 @@ pub mod Weaver {
 
 
         fn protocol_register(ref self: ContractState, protocol_name: ByteArray) {
-            assert(protocol_name.len() > 0, 'INVALID_PROTOCOL_NAME');
+            assert(protocol_name.len() > 0, Errors::INVALID_PROTOCOL_NAME);
 
             let protocol_info = self.protocol_registrations.read(get_caller_address());
-            assert(protocol_info.protocol_name.len() == 0, 'PROTOCOL_ALREADY_REGISTERED');
+            assert(protocol_info.protocol_name.len() == 0, Errors::PROTOCOL_ALREADY_REGISTERED);
             self.protocol_registrations.write(get_caller_address(), ProtocolInfo { protocol_name });
 
             // Dispatch the mint_weaver_nft call to the NFT contract
@@ -169,8 +150,8 @@ pub mod Weaver {
         }
 
         fn upgrade(ref self: ContractState, Imp_hash: ClassHash) {
-            assert(Imp_hash.is_non_zero(), 'Clash Hasd Cannot be Zero');
-            assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
+            assert(Imp_hash.is_non_zero(), Errors::CLASS_HASH_CANNOT_BE_ZERO);
+            assert(get_caller_address() == self.owner.read(), Errors::UNAUTHORIZED);
             starknet::syscalls::replace_class_syscall(Imp_hash).unwrap_syscall();
             self.version.write(self.version.read() + 1);
             self.emit(Event::Upgraded(Upgraded { implementation: Imp_hash }));
@@ -178,8 +159,8 @@ pub mod Weaver {
 
 
         fn set_erc721(ref self: ContractState, address: ContractAddress) {
-            assert(get_caller_address() == self.owner.read(), 'UNAUTHORIZED');
-            assert(address.is_non_zero(), 'INVALID_ADDRESS');
+            assert(get_caller_address() == self.owner.read(), Errors::UNAUTHORIZED);
+            assert(address.is_non_zero(), Errors::INVALID_ADDRESS);
             self.weaver_nft_address.write(address);
         }
     }
