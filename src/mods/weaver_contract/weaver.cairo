@@ -20,7 +20,7 @@ pub mod Weaver {
     use crate::mods::events::{ProtocolRegistered, TaskMinted, Upgraded, UserRegistered};
     use crate::mods::errors::Errors;
     use crate::mods::interfaces::IWeaver::IWeaver;
-    use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher,IWeaverNFTDispatcherTrait};
+    use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 
     // *************************************************************************
     //                              STORAGE
@@ -50,8 +50,6 @@ pub mod Weaver {
         ProtocolRegistered: ProtocolRegistered,
         TaskMinted: TaskMinted,
     }
-
-
 
 
     #[constructor]

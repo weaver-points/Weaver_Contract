@@ -5,7 +5,6 @@ use starknet::class_hash::ClassHash;
 //                              INTERFACE of  WEAVER
 // *************************************************************************
 
-
 use crate::mods::types::{ProtocolInfo, TaskInfo, User};
 
 #[starknet::interface]

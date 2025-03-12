@@ -8,4 +8,7 @@ pub mod Errors{
     pub  const UNAUTHORIZED: felt252 = 'UNAUTHORIZED';
     pub  const INVALID_ADDRESS: felt252 = 'INVALID_ADDRESS';
     pub const CLASS_HASH_CANNOT_BE_ZERO: felt252 = 'CLASS_HASH_CANNOT_BE_ZERO';
+    pub  const ALREADY_MINTED: felt252 =  'ALREADY_MINTED';
+    pub const INVALID_TOKEN_ID: felt252 = 'INVALID_TOKEN_ID';
+    pub const TOKEN_NOT_EXISTS: felt252 = 'TOKEN_NOT_EXISTS';
 }

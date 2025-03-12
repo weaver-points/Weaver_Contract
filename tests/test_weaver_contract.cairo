@@ -11,10 +11,11 @@ use snforge_std::{
 use starknet::{ContractAddress, get_block_timestamp};
 
 use weaver_contract::mods::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispatcherTrait};
-use weaver_contract::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
+use weaver_contract::mods::interfaces::IWeaverNFT::{
+    IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait
+};
 use weaver_contract::mods::events::{UserRegistered, ProtocolRegistered, TaskMinted};
 use weaver_contract::mods::weaver_contract::weaver::Weaver::{Event};
-
 
 
 fn OWNER() -> ContractAddress {
