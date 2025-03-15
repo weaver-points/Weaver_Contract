@@ -9,7 +9,9 @@ pub mod token {
 pub mod interfaces {
     pub mod IWeaver;
     pub mod IWeaverNFT;
-    pub mod ICustom;
+    pub mod ICustomNFT;
+    pub mod Iprotocol;
+    pub mod IERC721;
 }
 
 pub mod weaver_contract {
@@ -17,7 +19,7 @@ pub mod weaver_contract {
 }
 
 pub mod protocol {
-    pub mod protocol_component;
+    pub mod protocolcomponent;
     pub mod protocolNFT;
 }
 

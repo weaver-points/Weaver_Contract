@@ -15,7 +15,7 @@ use openzeppelin_token::erc721::interface::ERC721ABI;
     use openzeppelin_upgrades::UpgradeableComponent;
 
 
-    use crate::mods::interfaces::ICustom::ICustom;
+    use crate::mods::interfaces::ICustomNFT::ICustomNFT;
     use crate::mods::errors::Errors;
     use crate::mods::Utils::Convert_felt_to_bytearray::convert_into_byteArray;
    
@@ -91,7 +91,7 @@ use openzeppelin_token::erc721::interface::ERC721ABI;
 
 
     #[abi(embed_v0)]
-    impl IprotocolNFT of ICustom<ContractState> {
+    impl IprotocolNFT of ICustomNFT<ContractState> {
         fn mint_nft(ref self: ContractState, user_address: ContractAddress) -> u256 {
             let balance = self.erc721.balance_of(user_address);
             assert(balance.is_zero(), Errors::ALREADY_MINTED);

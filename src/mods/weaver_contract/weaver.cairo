@@ -116,6 +116,9 @@ pub mod Weaver {
         }
 
 
+        // add a verify function 
+
+
         // Getter functions
 
         fn owner(self: @ContractState) -> ContractAddress {
