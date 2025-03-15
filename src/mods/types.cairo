@@ -18,18 +18,18 @@ pub struct ProtocolInfo {
 }
 
 
-#[derive(Drop,Serde,Debug, PartialEq, starknet::Store)]
+#[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
 pub struct ProtocolDetails {
     pub protocol_id: u256,
     pub protocol_owner: ContractAddress,
     pub protocol_matadata_uri: ByteArray,
     pub protocol_nft_address: ContractAddress,
-    pub protocol_campaign_members:u256,
+    pub protocol_campaign_members: u256,
 }
 
 
-#[derive(Drop,Serde,Debug, PartialEq, starknet::Store)]
-pub struct CampaignMembers{
+#[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
+pub struct CampaignMembers {
     pub user_address: ContractAddress,
     pub protocol_id: u256,
     pub protocol_token_id: u256,

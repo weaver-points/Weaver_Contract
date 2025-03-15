@@ -116,8 +116,7 @@ pub mod Weaver {
         }
 
 
-        // add a verify function 
-
+        // add a verify function
 
         // Getter functions
 

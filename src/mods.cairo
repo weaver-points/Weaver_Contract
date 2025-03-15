@@ -23,7 +23,7 @@ pub mod protocol {
     pub mod protocolNFT;
 }
 
-pub mod Utils{
+pub mod Utils {
     pub mod Convert_felt_to_bytearray;
 }
 

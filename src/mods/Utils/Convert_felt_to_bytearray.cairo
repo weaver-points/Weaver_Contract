@@ -1,4 +1,3 @@
-
 pub impl FeltTryIntoByteArray of TryInto<felt252, ByteArray> {
     fn try_into(self: felt252) -> Option<ByteArray> {
         let mut res: ByteArray = "";
@@ -18,7 +17,6 @@ pub impl FeltTryIntoByteArray of TryInto<felt252, ByteArray> {
 }
 
 
- 
 pub fn convert_into_byteArray(ref svg: Array<felt252>) -> ByteArray {
     let mut res: ByteArray = Default::default();
     // converting felt252 array to byte array
@@ -32,8 +30,7 @@ pub fn convert_into_byteArray(ref svg: Array<felt252>) -> ByteArray {
 
 
 #[cfg(test)]
-
-mod  test {
+mod test {
     use super::FeltTryIntoByteArray;
 
     #[test]

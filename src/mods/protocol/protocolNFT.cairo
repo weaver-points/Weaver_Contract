@@ -5,8 +5,8 @@ pub mod protocolNFT {
     // *************************************************************************
 
     use openzeppelin_token::erc721::interface::IERC721Metadata;
-use ERC721Component::InternalTrait;
-use openzeppelin_token::erc721::interface::ERC721ABI;
+    use ERC721Component::InternalTrait;
+    use openzeppelin_token::erc721::interface::ERC721ABI;
     use starknet::{ContractAddress, get_block_timestamp};
     use core::num::traits::zero::Zero;
     use openzeppelin_introspection::src5::SRC5Component;
@@ -18,7 +18,7 @@ use openzeppelin_token::erc721::interface::ERC721ABI;
     use crate::mods::interfaces::ICustomNFT::ICustomNFT;
     use crate::mods::errors::Errors;
     use crate::mods::Utils::Convert_felt_to_bytearray::convert_into_byteArray;
-   
+
 
     use starknet::storage::{
         Map, StoragePointerWriteAccess, StoragePointerReadAccess, StorageMapReadAccess,
@@ -127,31 +127,26 @@ use openzeppelin_token::erc721::interface::ERC721ABI;
         //                            METADATA
         // *************************************************************************
 
-
         fn name(self: @ContractState) -> ByteArray {
             let mut collection_name = ArrayTrait::<felt252>::new();
             let protocol_id_felt252: felt252 = self.protocol_id.read().try_into().unwrap();
             collection_name.append('PROTOCOL');
             collection_name.append(protocol_id_felt252);
-            let protocol_name_byte =  convert_into_byteArray(ref collection_name);
+            let protocol_name_byte = convert_into_byteArray(ref collection_name);
 
             return protocol_name_byte;
-          
         }
 
 
-        fn symbol(self: @ContractState)-> ByteArray {
+        fn symbol(self: @ContractState) -> ByteArray {
             return "";
         }
 
 
-         fn token_uri(self: @ContractState, token_id: u256) -> ByteArray {
+        fn token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             let token_uri = IERC721Metadata::token_uri(self.erc721, token_id);
             return token_uri;
-         }
+        }
     }
 }
 
-
-
- 
