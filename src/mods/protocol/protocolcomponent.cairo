@@ -46,6 +46,7 @@ pub mod ProtocolCampagin {
     pub enum Event {
         ProtocolCampaign: ProtocolCampaign,
         JoinProtocolCampaign: JoinProtocolCampaign,
+        DeployProtocolNft: DeployProtocolNft,
     }
 
 
@@ -63,6 +64,13 @@ pub mod ProtocolCampagin {
         pub caller: ContractAddress,
         pub token_id: u256,
         pub user: ContractAddress,
+        pub block_timestamp: u64,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct DeployProtocolNft {
+        pub protocol_id: u256,
+        pub protocol_nft: ContractAddress,
         pub block_timestamp: u64,
     }
 
@@ -167,6 +175,38 @@ pub mod ProtocolCampagin {
                         block_timestamp: get_block_timestamp()
                     }
                 );
+        }
+
+
+        //@notice internal function that deploys protocol nft
+        //protocol_id: The id for the protocol
+        //SALT: for randomization
+
+        fn _deploy_protocol_nft(
+            ref self: ComponentState<TContractState>,
+            protocol_owner: ContractAddress,
+            protocol_id: u256,
+            protocol_nft_impl_class_hash: ClassHash,
+            salt: felt252
+        ) -> ContractAddress {
+            let mut constructor_data: Array<felt252> = array![
+                protocol_id.low.into(), protocol_id.high.into(), protocol_owner.into()
+            ];
+
+            let (account_address, _) = deploy_syscall(
+                protocol_nft_impl_class_hash, salt, constructor_data.span(), true
+            )
+                .unwrap_syscall();
+
+            self
+                .emit(
+                    DeployProtocolNft {
+                        protocol_id: protocol_id,
+                        protocol_nft: account_address,
+                        block_timestamp: get_block_timestamp()
+                    }
+                );
+            return account_address;
         }
 
 
