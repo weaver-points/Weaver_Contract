@@ -18,3 +18,10 @@ upgrade:
 	--contract-address ${address} \
 	--function "upgrade" \
 	--calldata ${calldata}
+
+
+
+	set_env:
+	export STARKNET_ACCOUNT=
+    export STARKNET_KEYSTORE=
+    export STARKNET_RPC=

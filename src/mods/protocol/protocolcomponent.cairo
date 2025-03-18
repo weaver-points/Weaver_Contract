@@ -37,12 +37,18 @@ pub mod ProtocolCampagin {
         Campaign_members: Map<
             (u256, ContractAddress), CampaignMembers
         >, // map the protocol id and the users interested on the protocol campaign
-        protocol_info: Map<u256, ByteArray>,
-        protocol_tasks: Map<u256, ProtocolCreateTask>,
+        protocol_info: Map<u256, ByteArray>, // map the protocol id to the protocol details 
+        protocol_tasks: Map<
+            u256, ProtocolCreateTask
+        >, // map the protocol create task to the task_id
         protocol_task_id: u256,
-        protocol_task_descriptions: Map<(u256, u256), ByteArray>,
-        tasks: Map<(u256, ContractAddress), u256>,
-        tasks_initialized: Map<u256, bool>,
+        protocol_task_descriptions: Map<
+            (u256, u256), ByteArray
+        >, // map the task description to the protocol_id and to the task_id
+        tasks: Map<
+            (u256, ContractAddress), u256
+        >, // map the protocol_id and the protocol_owner to the task_id
+        tasks_initialized: Map<u256, bool>, // track if the task_id has been used or not
         task_counter: u256,
     }
 
@@ -135,8 +141,7 @@ pub mod ProtocolCampagin {
             ref self: ComponentState<TContractState>,
             campaign_user: ContractAddress,
             protocol_id: u256
-        ) {// check if the user is not address zero
-
+        ) { // check if the user is not address zero
         // Get the caller as the campaign user by using the get_caller_address()
 
         // read from state if the protocols exists
@@ -147,6 +152,33 @@ pub mod ProtocolCampagin {
 
         //join the campaign by calling the internal function _join_protocol_campaign()
 
+        }
+
+
+        fn create_task(ref self: ComponentState<TContractState>, task_id: u256) -> u256 {
+            // Get the caller as the protocol owner by using the get_caller_address()
+
+            // Check if the task_id exist by reading from state i.e tasks_initialized
+            // and also assert if it exist  Errors::TASK_ALREADY_EXIST
+
+            // call the internal function _create_task
+
+            return task_id;
+        }
+
+
+        fn is_task_complete(
+            ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
+        ) -> bool {
+            // check if the user joined the campaign
+
+            // check if the task has been completed
+            //  assert if the task has not yet been completed Errors::TASK_NOT_YET_COMPLETED
+
+            // mint the protocol nft to the user that completed the task by calling the
+            // _mint_protocol_nft()
+
+            return true;
         }
 
 
@@ -211,6 +243,7 @@ pub mod ProtocolCampagin {
         // Protocol_owner: The owner of the protocol
         // Protocol_nft_address: The address of the protocol nft address
         // Protocol_id: The id for the protocol
+        // protocol_info: The details about the campaign
 
         fn _protocol_campaign(
             ref self: ComponentState<TContractState>,
@@ -294,13 +327,16 @@ pub mod ProtocolCampagin {
                 );
         }
 
-        ///@notice
+        ///@notice internal function that create task for the protocol
+        /// protocol_id: The id of the protocol that created the task
+        /// task_id: The task id of the task that was created
+        /// task_description: The description of the task
+        /// protocol_owner: The owner of the task created
 
         fn _create_task(
             ref self: ComponentState<TContractState>,
             protocol_id: u256,
             task_id: u256,
-            protocol_nft_address: ContractAddress,
             task_description: ByteArray,
             protocol_owner: ContractAddress
         ) {
@@ -310,7 +346,6 @@ pub mod ProtocolCampagin {
                 protocol_id: protocol_id,
                 protocol_owner: protocol_owner,
                 task_id: task_id,
-                protocol_nft_address: protocol_nft_address,
                 task_Description: task_description.clone()
             };
 

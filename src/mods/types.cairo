@@ -40,7 +40,6 @@ pub struct CampaignMembers {
 pub struct ProtocolCreateTask {
     pub protocol_id: u256,
     pub protocol_owner: ContractAddress,
-    pub protocol_nft_address: ContractAddress,
     pub task_Description: ByteArray,
     pub task_id: u256,
 }
