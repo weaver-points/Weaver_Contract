@@ -1,5 +1,4 @@
 use starknet::ContractAddress;
-use starknet::class_hash::ClassHash;
 
 // *************************************************************************
 //                              INTERFACE of  WEAVER
