@@ -22,6 +22,7 @@ pub mod ProtocolCampagin {
     use crate::mods::errors::Errors;
     use crate::mods::types::ProtocolDetails;
     use crate::mods::types::CampaignMembers;
+    
 
 
     #[storage]
@@ -36,7 +37,16 @@ pub mod ProtocolCampagin {
         Campaign_members: Map<
             (u256, ContractAddress), CampaignMembers
         >, // map the protocol id and the users interested on the protocol campaign
-        protocol_task_description: Map<u256, ByteArray>
+        protocol_info: Map<u256, ByteArray>,
+
+        // protocol_tasks: Map<u256 , ProtocolCreateTask>,
+        protocol_task_id: u256,
+        protocol_task_descriptions:Map<(u256, u256),ByteArray>,
+        tasks:Map<(u256, ContractAddress), u256>,
+        tasks_initialized:Map<u256, bool>,
+        task_counter:u256,
+
+
     }
 
 
@@ -50,6 +60,7 @@ pub mod ProtocolCampagin {
         ProtocolCampaign: ProtocolCampaign,
         JoinProtocolCampaign: JoinProtocolCampaign,
         DeployProtocolNft: DeployProtocolNft,
+        CreateTask:CreateTask,
     }
 
 
@@ -74,6 +85,16 @@ pub mod ProtocolCampagin {
     pub struct DeployProtocolNft {
         pub protocol_id: u256,
         pub protocol_nft: ContractAddress,
+        pub block_timestamp: u64,
+    }
+
+
+    #[derive(Drop,starknet::Event)]
+    pub struct CreateTask {
+        pub protocol_id: u256,
+        pub task_id: u256,
+        pub protocol_owner: ContractAddress,
+        pub task_description: ByteArray,
         pub block_timestamp: u64,
     }
 
@@ -200,7 +221,7 @@ pub mod ProtocolCampagin {
             protocol_owner: ContractAddress,
             protocol_nft_address: ContractAddress,
             protocol_id: u256,
-            protocol_task_description: ByteArray
+            protocol_info: ByteArray
         ) {
             // write to storage
 
@@ -210,14 +231,14 @@ pub mod ProtocolCampagin {
                 protocol_matadata_uri: "",
                 protocol_nft_address: protocol_nft_address,
                 protocol_campaign_members: 0,
-                protocol_task_description: "",
+                protocol_info: "",
             };
 
             self.protocols.write(protocol_id, protocol_details);
             self.protocol_initialized.write(protocol_id, true);
             self.protocol_owner.write(protocol_id, protocol_owner);
             self.protocol_counter.write(protocol_id);
-            self.protocol_task_description.write(protocol_id, protocol_task_description);
+            self.protocol_info.write(protocol_id, protocol_info);
 
             // emit event after creating protocol creates campaign
 
@@ -276,6 +297,10 @@ pub mod ProtocolCampagin {
                     }
                 );
         }
+
+      
+
+        
 
 
         //@notice internal function that deploys protocol nft
