@@ -38,15 +38,12 @@ pub mod ProtocolCampagin {
             (u256, ContractAddress), CampaignMembers
         >, // map the protocol id and the users interested on the protocol campaign
         protocol_info: Map<u256, ByteArray>,
-
-        protocol_tasks: Map<u256 , ProtocolCreateTask>,
+        protocol_tasks: Map<u256, ProtocolCreateTask>,
         protocol_task_id: u256,
-        protocol_task_descriptions:Map<(u256, u256),ByteArray>,
-        tasks:Map<(u256, ContractAddress), u256>,
-        tasks_initialized:Map<u256, bool>,
-        task_counter:u256,
-
-
+        protocol_task_descriptions: Map<(u256, u256), ByteArray>,
+        tasks: Map<(u256, ContractAddress), u256>,
+        tasks_initialized: Map<u256, bool>,
+        task_counter: u256,
     }
 
 
@@ -60,7 +57,7 @@ pub mod ProtocolCampagin {
         ProtocolCampaign: ProtocolCampaign,
         JoinProtocolCampaign: JoinProtocolCampaign,
         DeployProtocolNft: DeployProtocolNft,
-        CreateTask:CreateTask,
+        CreateTask: CreateTask,
     }
 
 
@@ -89,7 +86,7 @@ pub mod ProtocolCampagin {
     }
 
 
-    #[derive(Drop,starknet::Event)]
+    #[derive(Drop, starknet::Event)]
     pub struct CreateTask {
         pub protocol_id: u256,
         pub task_id: u256,
@@ -138,8 +135,7 @@ pub mod ProtocolCampagin {
             ref self: ComponentState<TContractState>,
             campaign_user: ContractAddress,
             protocol_id: u256
-        ) {
-        // check if the user is not address zero
+        ) {// check if the user is not address zero
 
         // Get the caller as the campaign user by using the get_caller_address()
 
@@ -298,50 +294,44 @@ pub mod ProtocolCampagin {
                 );
         }
 
-        ///@notice 
+        ///@notice
 
-
-        fn _create_task( ref self: ComponentState<TContractState>,
+        fn _create_task(
+            ref self: ComponentState<TContractState>,
             protocol_id: u256,
             task_id: u256,
-            protocol_nft_address:ContractAddress,
+            protocol_nft_address: ContractAddress,
             task_description: ByteArray,
             protocol_owner: ContractAddress
-        
         ) {
-            // write to the storage 
+            // write to the storage
 
             let task_descriptions = ProtocolCreateTask {
                 protocol_id: protocol_id,
                 protocol_owner: protocol_owner,
-                task_id:task_id,
-                protocol_nft_address:protocol_nft_address,
-                task_Description:task_description.clone()
+                task_id: task_id,
+                protocol_nft_address: protocol_nft_address,
+                task_Description: task_description.clone()
             };
 
-            self.protocol_tasks.write(task_id,task_descriptions);
+            self.protocol_tasks.write(task_id, task_descriptions);
             self.protocol_task_id.write(task_id);
-            self.tasks.write((protocol_id,protocol_owner),task_id);
+            self.tasks.write((protocol_id, protocol_owner), task_id);
             self.protocol_task_descriptions.write((protocol_id, task_id), task_description.clone());
-            self.tasks_initialized.write(task_id,true);
+            self.tasks_initialized.write(task_id, true);
             self.task_counter.write(task_id);
 
-
-            self 
-               .emit(
-                CreateTask {
-                    protocol_id:protocol_id,
-                    task_id:task_id,
-                    protocol_owner:protocol_owner,
-                    task_description:task_description,
-                    block_timestamp: get_block_timestamp()
-
-                }
-               );
+            self
+                .emit(
+                    CreateTask {
+                        protocol_id: protocol_id,
+                        task_id: task_id,
+                        protocol_owner: protocol_owner,
+                        task_description: task_description,
+                        block_timestamp: get_block_timestamp()
+                    }
+                );
         }
-           
-
-        
 
 
         //@notice internal function that deploys protocol nft

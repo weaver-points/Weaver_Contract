@@ -37,8 +37,8 @@ pub struct CampaignMembers {
 }
 
 #[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
-pub struct ProtocolCreateTask{
-    pub protocol_id:u256,
+pub struct ProtocolCreateTask {
+    pub protocol_id: u256,
     pub protocol_owner: ContractAddress,
     pub protocol_nft_address: ContractAddress,
     pub task_Description: ByteArray,
