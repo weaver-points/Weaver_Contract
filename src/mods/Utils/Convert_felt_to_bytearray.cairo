@@ -40,4 +40,3 @@ mod test {
         assert(b == "PROTOCOL NFT NAME", 'INVAILD_NFT_NAME');
     }
 }
-
