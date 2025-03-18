@@ -28,12 +28,15 @@ pub mod ProtocolCampagin {
     pub struct Storage {
         protocol_id: u256,
         protocol_counter: u256,
-        protocol_nft_class_hash: ClassHash,
-        protocol_owner: Map<u256, ContractAddress>,
-        protocols: Map<u256, ProtocolDetails>,
-        protocol_initialized: Map<u256, bool>,
+        protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
+        protocol_owner: Map<u256, ContractAddress>, // map the owner address and the protocol id 
+        protocols: Map<u256, ProtocolDetails>, // map the protocol details and the protocol id 
+        protocol_initialized: Map<u256, bool>, // track if the protocol id has been used or not 
         users_count: u256,
-        Campaign_members: Map<(u256, ContractAddress), CampaignMembers>
+        Campaign_members: Map<
+            (u256, ContractAddress), CampaignMembers
+        >, // map the protocol id and the users interested on the protocol campaign
+        protocol_task_description: Map<u256, ByteArray>
     }
 
 
@@ -76,6 +79,98 @@ pub mod ProtocolCampagin {
 
 
     // *************************************************************************
+    //                            EXTERNAL FUNCTIONS
+    // *************************************************************************
+
+    #[embeddable_as(ProtocolCampaigm)]
+    impl ProtocolImpl<
+        TContractState,
+        +HasComponent<TContractState>,
+        +Drop<TContractState>,
+        impl Ownable: OwnableComponent::HasComponent<TContractState>
+    > of IProtocol<ComponentState<TContractState>> {
+        /// @notice Create a new protocol campaign
+
+        fn create_protocol_campaign(
+            ref self: ComponentState<TContractState>, protocol_id: u256
+        ) -> u256 {
+            // Get the caller as the protocol owner by using the get_caller_address()
+
+            // Read from state the protocol_nft_class_hash
+
+            // Check if the protocol_id exist by reading from state i.e protocol_initialized
+            // and also assert if it exist  Errors::PROTOCOL_ALREADY_EXIST
+
+            // deploy protocol nft by calling the internal function _deploy_protocol_nft()
+
+            // Create a protocol nft by calling the internal function _protocol_campaign()
+
+            return protocol_id;
+        }
+
+
+        /// @notice adds users to the protocol campaign
+        /// campaign_user: The user that joins the protocol campaign
+        /// protocol_id: The id of the protocol that the user will join their campaign
+
+        fn join_protocol_campaign(
+            ref self: ComponentState<TContractState>,
+            campaign_user: ContractAddress,
+            protocol_id: u256
+        ) {
+        // check if the user is not address zero
+
+        // Get the caller as the campaign user by using the get_caller_address()
+
+        // read from state if the protocols exists
+
+        // check if the user is not already on the protocol campaign by using the getter function
+        // is_campaign_member()
+        // and also assert with Errors::ALREADY_IN_PROTOCOL_CAMPAIGN
+
+        //join the campaign by calling the internal function _join_protocol_campaign()
+
+        }
+
+
+        /// @notice set the matadat uri of the protocol
+        /// protcol_id: the protocol_id for the protocol
+        /// matadata_uri: The protocol matadata uri
+
+        fn set_protocol_matadata_uri(
+            ref self: ComponentState<TContractState>, protocol_id: u256, matadata_uri: ByteArray
+        ) {
+            let protocol_owner = self.protocol_owner.read(protocol_id);
+            assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
+
+            let protocol_details = self.protocols.read(protocol_id);
+
+            let update_protocol_details = ProtocolDetails {
+                protocol_matadata_uri: matadata_uri, ..protocol_details
+            };
+
+            self.protocols.write(protocol_id, update_protocol_details);
+        }
+
+
+        // *************************************************************************
+        //                              GETTERS
+        // *************************************************************************
+
+        fn is_campaign_member(
+            self: @ComponentState<TContractState>, campaign_user: ContractAddress, protocol_id: u256
+        ) -> (bool, CampaignMembers) {
+            let campaign_member = self.Campaign_members.read((protocol_id, campaign_user));
+            if (campaign_member.protocol_id == protocol_id) {
+                (true, campaign_member)
+            } else {
+                (false, campaign_member)
+            }
+        }
+    }
+
+
+    // *************************************************************************
     //                            PRIVATE FUNCTIONS
     // *************************************************************************
 
@@ -96,13 +191,16 @@ pub mod ProtocolCampagin {
 
 
         // @notice create protocol campaign
-        //
+        // Protocol_owner: The owner of the protocol
+        // Protocol_nft_address: The address of the protocol nft address
+        // Protocol_id: The id for the protocol
 
         fn _protocol_campaign(
             ref self: ComponentState<TContractState>,
             protocol_owner: ContractAddress,
             protocol_nft_address: ContractAddress,
-            protocol_id: u256
+            protocol_id: u256,
+            protocol_task_description: ByteArray
         ) {
             // write to storage
 
@@ -112,12 +210,14 @@ pub mod ProtocolCampagin {
                 protocol_matadata_uri: "",
                 protocol_nft_address: protocol_nft_address,
                 protocol_campaign_members: 0,
+                protocol_task_description: "",
             };
 
             self.protocols.write(protocol_id, protocol_details);
             self.protocol_initialized.write(protocol_id, true);
             self.protocol_owner.write(protocol_id, protocol_owner);
             self.protocol_counter.write(protocol_id);
+            self.protocol_task_description.write(protocol_id, protocol_task_description);
 
             // emit event after creating protocol creates campaign
 

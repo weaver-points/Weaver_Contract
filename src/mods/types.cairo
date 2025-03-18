@@ -25,6 +25,7 @@ pub struct ProtocolDetails {
     pub protocol_matadata_uri: ByteArray,
     pub protocol_nft_address: ContractAddress,
     pub protocol_campaign_members: u256,
+    pub protocol_task_description: ByteArray,
 }
 
 
