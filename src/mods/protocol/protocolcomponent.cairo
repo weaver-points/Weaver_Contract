@@ -155,13 +155,26 @@ pub mod ProtocolCampagin {
         }
 
 
-        fn create_task(ref self: ComponentState<TContractState>, task_id: u256) -> u256 {
+        fn create_task(ref self: ComponentState<TContractState>, task_id: u256, task_description: ByteArray) -> u256 {
             // Get the caller as the protocol owner by using the get_caller_address()
+            let protocol_owner = get_caller_address();
 
             // Check if the task_id exist by reading from state i.e tasks_initialized
             // and also assert if it exist  Errors::TASK_ALREADY_EXIST
+            let task_exists = self.tasks_initialized.read(task_id);
+            assert(!task_exists, Errors::TASK_ALREADY_EXIST);
+
+            let protocol_id = self.protocol_id.read();
+            let protocol_owner_stored = self.protocol_owner.read(protocol_id);
+            assert(protocol_owner == protocol_owner_stored, Errors::UNAUTHORIZED);
 
             // call the internal function _create_task
+            self._create_task(
+                protocol_id,
+                task_id,
+                task_description,
+                protocol_owner
+            );
 
             return task_id;
         }
