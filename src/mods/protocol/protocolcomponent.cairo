@@ -183,11 +183,11 @@ pub mod ProtocolCampagin {
             let protocol_id = task_details.protocol_id;
 
             // check if the user joined the campaign
-            let (is_member, _) = self.is_campaign_member(@self, campaign_user, protocol_id);
+            let (is_member, _) = self.is_campaign_member(campaign_user, protocol_id);
             assert(is_member, Errors::USER_NOT_REGISTERED);
 
             // check if the task has been completed
-            let task_completed = self.task_completetion.read(task_id, campaign_user);
+            let task_completed = self.task_completetion.read((task_id, campaign_user));
             //  assert if the task has not yet been completed Errors::TASK_NOT_YET_COMPLETED
             assert(task_completed, Errors::TASK_NOT_YET_COMPLETED);
 
