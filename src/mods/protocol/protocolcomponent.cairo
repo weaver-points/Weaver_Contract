@@ -27,25 +27,25 @@ pub mod ProtocolCampagin {
 
     #[storage]
     pub struct Storage {
-        protocol_id: u256,
+      pub  protocol_id: u256,
         protocol_counter: u256,
-        protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
+      pub  protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
         protocol_owner: Map<u256, ContractAddress>, // map the owner address and the protocol id 
         protocols: Map<u256, ProtocolDetails>, // map the protocol details and the protocol id 
         protocol_initialized: Map<u256, bool>, // track if the protocol id has been used or not 
         users_count: u256,
-        Campaign_members: Map<
+     pub   Campaign_members: Map<
             (u256, ContractAddress), CampaignMembers
         >, // map the protocol id and the users interested on the protocol campaign
         protocol_info: Map<u256, ByteArray>, // map the protocol id to the protocol details 
         protocol_tasks: Map<
             u256, ProtocolCreateTask
         >, // map the protocol create task to the task_id
-        protocol_task_id: u256,
+      pub  protocol_task_id: u256,
         protocol_task_descriptions: Map<
             (u256, u256), ByteArray
         >, // map the task description to the protocol_id and to the task_id
-        tasks: Map<
+     pub   tasks: Map<
             (u256, ContractAddress), u256
         >, // map the protocol_id and the protocol_owner to the task_id
         tasks_initialized: Map<u256, bool>, // track if the task_id has been used or not
@@ -171,10 +171,12 @@ pub mod ProtocolCampagin {
 
 
         fn create_task(
-            ref self: ComponentState<TContractState>, task_id: u256, task_description: ByteArray
+            ref self: ComponentState<TContractState>, task_description: ByteArray
         ) -> u256 {
             // Get the caller as the protocol owner by using the get_caller_address()
             let protocol_owner = get_caller_address();
+
+            let task_id = self.protocol_task_id.read()+1;
 
             // Check if the task_id exist by reading from state i.e tasks_initialized
             // and also assert if it exist  Errors::TASK_ALREADY_EXIST
