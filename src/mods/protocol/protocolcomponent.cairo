@@ -155,7 +155,9 @@ pub mod ProtocolCampagin {
         }
 
 
-        fn create_task(ref self: ComponentState<TContractState>, task_id: u256, task_description: ByteArray) -> u256 {
+        fn create_task(
+            ref self: ComponentState<TContractState>, task_id: u256, task_description: ByteArray
+        ) -> u256 {
             // Get the caller as the protocol owner by using the get_caller_address()
             let protocol_owner = get_caller_address();
 
@@ -169,12 +171,7 @@ pub mod ProtocolCampagin {
             assert(protocol_owner == protocol_owner_stored, Errors::UNAUTHORIZED);
 
             // call the internal function _create_task
-            self._create_task(
-                protocol_id,
-                task_id,
-                task_description,
-                protocol_owner
-            );
+            self._create_task(protocol_id, task_id, task_description, protocol_owner);
 
             return task_id;
         }
