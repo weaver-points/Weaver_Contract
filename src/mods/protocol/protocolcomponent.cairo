@@ -173,7 +173,6 @@ pub mod ProtocolCampagin {
         fn is_task_complete(
             ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
         ) -> bool {
-
             // Check if the task exists
             let task_exists = self.tasks_initialized.read(task_id);
             assert(task_exists, Errors::TASK_NOT_EXISTS);
@@ -190,7 +189,6 @@ pub mod ProtocolCampagin {
             let task_completed = self.task_completetion.read((task_id, campaign_user));
             //  assert if the task has not yet been completed Errors::TASK_NOT_YET_COMPLETED
             assert(task_completed, Errors::TASK_NOT_YET_COMPLETED);
-
 
             // mint the protocol nft to the user that completed the task by calling the
             // _mint_protocol_nft()
