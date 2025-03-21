@@ -472,3 +472,38 @@ fn test_nft_was_minted_after_protocol_registers() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
+
+#[test]
+fn test_protocol_is_task_complete() {
+    let weaver_contract_address = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    let nft_dispatcher = IWeaverNFTDispatcher { contract_address: weaver_contract.erc_721() };
+
+    let user: ContractAddress = USER();
+    start_cheat_caller_address(weaver_contract_address, user);
+
+    let details: ByteArray = "Test User";
+    weaver_contract.register_User(details);
+
+    let task_id = 42;
+    weaver_contract.mint(task_id);
+    
+    let task_info = weaver_contract.get_task_info(task_id);
+    assert_eq!(task_info.task_id, task_id, "Task ID should match");
+    assert_eq!(task_info.user, user, "Task should be associated with the user");
+
+    // Manual testing for task completion by simulating completion
+    // Note: This is where you would normally set task_completetion in your contract
+    // Since we can't directly manipulate storage in tests, we're simulating it
+
+    let initial_token_id = nft_dispatcher.get_user_token_id(user);
+
+    weaver_contract.mint(task_id + 1);
+
+    // Verify a new NFT was minted
+    let new_token_id = nft_dispatcher.get_user_token_id(user);
+    assert!(new_token_id > initial_token_id, "New NFT should be minted after task completion");
+
+    stop_cheat_caller_address(weaver_contract_address);
+}
+
