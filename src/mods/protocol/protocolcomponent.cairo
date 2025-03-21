@@ -141,17 +141,32 @@ pub mod ProtocolCampagin {
             ref self: ComponentState<TContractState>,
             campaign_user: ContractAddress,
             protocol_id: u256
-        ) { // check if the user is not address zero
+        ) { 
+        // check if the user is not address zero
+        assert(!campaign_user.is_zero(), Errors::INVALID_ADDRESS);
+
         // Get the caller as the campaign user by using the get_caller_address()
+        let caller = get_caller_address();
+        assert(caller == campaign_user, Errors::UNAUTHORIZED);
 
         // read from state if the protocols exists
+        let protocol_initialized = self.protocol_initialized.read(protocol_id);
+        assert(protocol_initialized, Errors::PROTOCOL_DOES_NOT_EXIST);
 
         // check if the user is not already on the protocol campaign by using the getter function
         // is_campaign_member()
+
+        let (is_member, _): (bool, CampaignMembers) = self.is_campaign_member(campaign_user, protocol_id);
         // and also assert with Errors::ALREADY_IN_PROTOCOL_CAMPAIGN
+        assert(!is_member, Errors::ALREADY_IN_PROTOCOL_CAMPAIGN);
+
+        // Read the protocol details to get the NFT address
+        let protocol_details = self.protocols.read(protocol_id);
+        let protocol_nft_address = protocol_details.protocol_nft_address;
+
 
         //join the campaign by calling the internal function _join_protocol_campaign()
-
+        self._join_protocol_campaign(campaign_user, protocol_nft_address, protocol_id);
         }
 
 
