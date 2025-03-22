@@ -274,6 +274,17 @@ pub mod ProtocolCampagin {
             // Mark the task as completed for this user
             self.task_completetion.write((task_id, campaign_user), true);
         }
+
+
+        /// @notice get the particular protocol details
+        /// protocol_id: id of the returned community
+        /// protocolDetails: The details of the protocol
+
+        fn get_protocol(
+            self: @ComponentState<TContractState>, protocol_id: u256
+        ) -> ProtocolDetails {
+            return self.protocols.read(protocol_id);
+        }
     }
 
 
