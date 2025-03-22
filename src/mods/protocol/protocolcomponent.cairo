@@ -240,13 +240,12 @@ pub mod ProtocolCampagin {
         fn mark_task_complete(
             ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
         ) {
-
             let task_exists = self.tasks_initialized.read(task_id);
             assert(task_exists, Errors::TASK_NOT_EXISTS);
 
             let task_details = self.protocol_tasks.read(task_id);
             let protocol_id = task_details.protocol_id;
-            
+
             let protocol_owner = self.protocol_owner.read(protocol_id);
             assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
 
@@ -256,7 +255,6 @@ pub mod ProtocolCampagin {
             // Mark the task as completed for this user
             self.task_completetion.write((task_id, campaign_user), true);
         }
-
     }
 
 

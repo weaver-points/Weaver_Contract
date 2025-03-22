@@ -473,4 +473,3 @@ fn test_nft_was_minted_after_protocol_registers() {
     stop_cheat_caller_address(weaver_contract_address);
 }
 
-
