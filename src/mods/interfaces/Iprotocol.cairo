@@ -1,5 +1,6 @@
 use starknet::ContractAddress;
 use crate::mods::types::CampaignMembers;
+use crate::mods::types::ProtocolDetails;
 
 #[starknet::interface]
 pub trait IProtocol<TState> {
@@ -24,4 +25,10 @@ pub trait IProtocol<TState> {
     fn is_campaign_member(
         self: @TState, campaign_user: ContractAddress, protocol_id: u256
     ) -> (bool, CampaignMembers);
+
+    fn get_protocol(self: @TState, protocol_id: u256) -> ProtocolDetails;
+
+    fn get_protocol_matadata_uri(
+        self: @TState, protocol_id: u256 
+    ) -> ByteArray;
 }
