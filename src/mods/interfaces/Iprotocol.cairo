@@ -27,4 +27,8 @@ pub trait IProtocol<TState> {
     ) -> (bool, CampaignMembers);
 
     fn get_protocol(self: @TState, protocol_id: u256) -> ProtocolDetails;
+
+    fn get_protocol_matadata_uri(
+        self: @TState, protocol_id: u256 
+    ) -> ByteArray;
 }
