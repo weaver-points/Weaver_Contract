@@ -1,6 +1,7 @@
 use starknet::ContractAddress;
 use crate::mods::types::CampaignMembers;
 use crate::mods::types::ProtocolDetails;
+use crate::mods::types::ProtocolCreateTask;
 
 #[starknet::interface]
 pub trait IProtocol<TState> {
@@ -31,4 +32,10 @@ pub trait IProtocol<TState> {
     fn get_protocol_matadata_uri(
         self: @TState, protocol_id: u256 
     ) -> ByteArray;
+
+    fn get_protocol_tasks_details(self: @TState, protocol_id: u256)->ProtocolCreateTask;
+
+    fn get_protocol_task_descriptions(self: @TState, task_id: u256)-> ByteArray;
+
+    fn get_protocol_campaign_users(self: @TState, protocol_id: u256)-> u256;
 }
