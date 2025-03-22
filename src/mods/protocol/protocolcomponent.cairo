@@ -50,6 +50,9 @@ pub mod ProtocolCampagin {
         >, // map the protocol_id and the protocol_owner to the task_id
         tasks_initialized: Map<u256, bool>, // track if the task_id has been used or not
         task_counter: u256,
+        task_completetion: Map<
+            (u256, ContractAddress), bool
+        >, // Map (task_id, user_address) to completion status
     }
 
 
@@ -186,21 +189,6 @@ pub mod ProtocolCampagin {
         }
 
 
-        fn is_task_complete(
-            ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
-        ) -> bool {
-            // check if the user joined the campaign
-
-            // check if the task has been completed
-            //  assert if the task has not yet been completed Errors::TASK_NOT_YET_COMPLETED
-
-            // mint the protocol nft to the user that completed the task by calling the
-            // _mint_protocol_nft()
-
-            return true;
-        }
-
-
         /// @notice set the matadat uri of the protocol
         /// protcol_id: the protocol_id for the protocol
         /// matadata_uri: The protocol matadata uri
@@ -234,6 +222,57 @@ pub mod ProtocolCampagin {
             } else {
                 (false, campaign_member)
             }
+        }
+
+        fn is_task_complete(
+            ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
+        ) -> bool {
+            // Check if the task exists
+            let task_exists = self.tasks_initialized.read(task_id);
+            assert(task_exists, Errors::TASK_NOT_EXISTS);
+
+            // Get task details
+            let task_details = self.protocol_tasks.read(task_id);
+            let protocol_id = task_details.protocol_id;
+
+            // check if the user joined the campaign
+            let (is_member, _) = self.is_campaign_member(campaign_user, protocol_id);
+            assert(is_member, Errors::USER_NOT_REGISTERED);
+
+            // check if the task has been completed
+            let task_completed = self.task_completetion.read((task_id, campaign_user));
+            //  assert if the task has not yet been completed Errors::TASK_NOT_YET_COMPLETED
+            assert(task_completed, Errors::TASK_NOT_YET_COMPLETED);
+
+            // mint the protocol nft to the user that completed the task by calling the
+            // _mint_protocol_nft()
+            if task_completed {
+                let protocol_details = self.protocols.read(protocol_id);
+                let protocol_nft_address = protocol_details.protocol_nft_address;
+
+                let _ = self._mint_protocol_nft(campaign_user, protocol_nft_address);
+            }
+
+            return task_completed;
+        }
+
+        fn mark_task_complete(
+            ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
+        ) {
+            let task_exists = self.tasks_initialized.read(task_id);
+            assert(task_exists, Errors::TASK_NOT_EXISTS);
+
+            let task_details = self.protocol_tasks.read(task_id);
+            let protocol_id = task_details.protocol_id;
+
+            let protocol_owner = self.protocol_owner.read(protocol_id);
+            assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
+
+            let (is_member, _) = self.is_campaign_member(campaign_user, protocol_id);
+            assert(is_member, Errors::USER_NOT_REGISTERED);
+
+            // Mark the task as completed for this user
+            self.task_completetion.write((task_id, campaign_user), true);
         }
     }
 

@@ -15,13 +15,12 @@ pub trait IProtocol<TState> {
     fn create_task(ref self: TState, task_description: ByteArray) -> u256;
 
 
-    fn is_task_complete(ref self: TState, campaign_user: ContractAddress, task_id: u256) -> bool;
-
-
     // *************************************************************************
     //                            GETTER
     // *************************************************************************
 
+    fn is_task_complete(ref self: TState, campaign_user: ContractAddress, task_id: u256) -> bool;
+    fn mark_task_complete(ref self: TState, campaign_user: ContractAddress, task_id: u256);
     fn is_campaign_member(
         self: @TState, campaign_user: ContractAddress, protocol_id: u256
     ) -> (bool, CampaignMembers);
