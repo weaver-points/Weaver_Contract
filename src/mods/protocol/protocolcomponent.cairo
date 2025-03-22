@@ -193,6 +193,7 @@ pub mod ProtocolCampagin {
             // mint the protocol nft to the user that completed the task by calling the
             // _mint_protocol_nft()
             if task_completed {
+                self.task_completetion.write((task_id, campaign_user), true);
                 let protocol_details = self.protocols.read(protocol_id);
                 let protocol_nft_address = protocol_details.protocol_nft_address;
 

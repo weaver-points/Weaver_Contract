@@ -507,3 +507,18 @@ fn test_protocol_is_task_complete() {
     stop_cheat_caller_address(weaver_contract_address);
 }
 
+#[test]
+#[should_panic(expected: 'USER_NOT_REGISTERED')]
+fn test_protocol_user_not_registered() {
+    let weaver_contract_address = __setup__();
+    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+    
+    let unregistered_user = 'unregistered'.try_into().unwrap();
+    
+    start_cheat_caller_address(weaver_contract_address, unregistered_user);
+    
+    let task_id = 42;
+    weaver_contract.mint(task_id);
+    
+    stop_cheat_caller_address(weaver_contract_address);
+}
