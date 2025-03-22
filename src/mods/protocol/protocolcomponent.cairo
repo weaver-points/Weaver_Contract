@@ -113,21 +113,29 @@ pub mod ProtocolCampagin {
         +Drop<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of IProtocol<ComponentState<TContractState>> {
-        /// @notice Create a new protocol campaign
 
+        /// @notice Create a new protocol campaign
         fn create_protocol_campaign(
             ref self: ComponentState<TContractState>, protocol_id: u256
         ) -> u256 {
             // Get the caller as the protocol owner by using the get_caller_address()
+            let protocol_owner = get_caller_address();
 
             // Read from state the protocol_nft_class_hash
+            let protocol_nft_class_hash = self.protocol_nft_class_hash.read();
 
             // Check if the protocol_id exist by reading from state i.e protocol_initialized
             // and also assert if it exist  Errors::PROTOCOL_ALREADY_EXIST
+            let protocol_initialized = self.protocol_initialized.read(protocol_id);
+            assert(!protocol_initialized, Errors::PROTOCOL_ALREADY_EXIST);
 
             // deploy protocol nft by calling the internal function _deploy_protocol_nft()
+            let salt = protocol_id.low.into(); // Using protocol_id.low as a simple salt for determinism
+            let protocol_nft_address = self._deploy_protocol_nft(protocol_owner, protocol_id, protocol_nft_class_hash, salt);
 
             // Create a protocol nft by calling the internal function _protocol_campaign()
+            let protocol_info = ""; // Placeholder; adjust if specific info is required
+            self._protocol_campaign(protocol_owner, protocol_nft_address, protocol_id, protocol_info);
 
             return protocol_id;
         }
