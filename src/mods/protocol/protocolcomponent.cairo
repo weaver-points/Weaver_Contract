@@ -283,23 +283,41 @@ pub mod ProtocolCampagin {
         fn get_protocol(
             self: @ComponentState<TContractState>, protocol_id: u256
         ) -> ProtocolDetails {
-            return  self.protocols.read(protocol_id);
+            return self.protocols.read(protocol_id);
         }
 
 
-        /// @notice get the particular protocol matadata uri 
+        /// @notice get the particular protocol matadata uri
         /// protocol_id: id of the returned community
         /// @return ByteArray metadata uri
-        
+
         fn get_protocol_matadata_uri(
-            self: @ComponentState<TContractState>, protocol_id: u256 
+            self: @ComponentState<TContractState>, protocol_id: u256
         ) -> ByteArray {
             let protocol = self.protocols.read(protocol_id);
             return protocol.protocol_matadata_uri;
         }
 
 
-        
+        fn get_protocol_tasks_details(
+            self: @ComponentState<TContractState>, protocol_id: u256
+        ) -> ProtocolCreateTask {
+            return self.protocol_tasks.read(protocol_id);
+        }
+
+        fn get_protocol_task_descriptions(
+            self: @ComponentState<TContractState>, task_id: u256
+        ) -> ByteArray {
+            let task = self.protocol_tasks.read(task_id);
+            return task.task_Description;
+        }
+
+        fn get_protocol_campaign_users(
+            self: @ComponentState<TContractState>, protocol_id: u256
+        ) -> u256 {
+            let protocol = self.protocols.read(protocol_id);
+            return protocol.protocol_campaign_members;
+        }
     }
 
 
