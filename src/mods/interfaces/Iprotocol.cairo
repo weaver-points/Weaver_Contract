@@ -29,13 +29,11 @@ pub trait IProtocol<TState> {
 
     fn get_protocol(self: @TState, protocol_id: u256) -> ProtocolDetails;
 
-    fn get_protocol_matadata_uri(
-        self: @TState, protocol_id: u256 
-    ) -> ByteArray;
+    fn get_protocol_matadata_uri(self: @TState, protocol_id: u256) -> ByteArray;
 
-    fn get_protocol_tasks_details(self: @TState, protocol_id: u256)->ProtocolCreateTask;
+    fn get_protocol_tasks_details(self: @TState, protocol_id: u256) -> ProtocolCreateTask;
 
-    fn get_protocol_task_descriptions(self: @TState, task_id: u256)-> ByteArray;
+    fn get_protocol_task_descriptions(self: @TState, task_id: u256) -> ByteArray;
 
-    fn get_protocol_campaign_users(self: @TState, protocol_id: u256)-> u256;
+    fn get_protocol_campaign_users(self: @TState, protocol_id: u256) -> u256;
 }
