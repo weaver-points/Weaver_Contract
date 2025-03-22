@@ -487,7 +487,7 @@ fn test_protocol_is_task_complete() {
 
     let task_id = 42;
     weaver_contract.mint(task_id);
-    
+
     let task_info = weaver_contract.get_task_info(task_id);
     assert_eq!(task_info.task_id, task_id, "Task ID should match");
     assert_eq!(task_info.user, user, "Task should be associated with the user");
@@ -512,13 +512,13 @@ fn test_protocol_is_task_complete() {
 fn test_protocol_user_not_registered() {
     let weaver_contract_address = __setup__();
     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-    
+
     let unregistered_user = 'unregistered'.try_into().unwrap();
-    
+
     start_cheat_caller_address(weaver_contract_address, unregistered_user);
-    
+
     let task_id = 42;
     weaver_contract.mint(task_id);
-    
+
     stop_cheat_caller_address(weaver_contract_address);
 }
