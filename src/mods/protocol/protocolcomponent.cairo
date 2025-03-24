@@ -4,7 +4,7 @@ pub mod ProtocolCampagin {
     use core::num::traits::zero::Zero;
 
     use starknet::{
-        ContractAddress, get_caller_address, get_block_timestamp, contract_address_const, ClassHash,
+        ContractAddress, get_caller_address, get_block_timestamp, ClassHash,
         syscalls::deploy_syscall, SyscallResultTrait,
         storage::{
             StoragePointerWriteAccess, StoragePointerReadAccess, Map, StorageMapReadAccess,
@@ -17,7 +17,6 @@ pub mod ProtocolCampagin {
 
     use crate::mods::interfaces::Iprotocol::IProtocol;
     use crate::mods::interfaces::ICustomNFT::{ICustomNFTDispatcher, ICustomNFTDispatcherTrait};
-    use crate::mods::interfaces::IERC721::{IERC721Dispatcher, IERC721DispatcherTrait};
 
     use crate::mods::errors::Errors;
     use crate::mods::types::ProtocolDetails;
@@ -519,3 +518,4 @@ pub mod ProtocolCampagin {
         }
     }
 }
+
