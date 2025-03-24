@@ -21,6 +21,7 @@ pub mod weaver_contract {
 pub mod protocol {
     pub mod protocolcomponent;
     pub mod protocolNFT;
+    pub mod protocols;
 }
 
 pub mod Utils {
