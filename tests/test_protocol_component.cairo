@@ -45,6 +45,11 @@ fn ___setup___() -> ContractAddress{
 
 #[test]
 fn test_create_protocol_campaign() {
+    let protocol_contract_address = ___setup___();
+
+    let protocol_dispatcher = IProtocolDispatcher{
+        contract_address: protocol_contract_address
+    };
 
 }
 
