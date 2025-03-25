@@ -1,15 +1,16 @@
-#[starknet::interface]
-pub trait Iprotocols<TContractState> {}
-
-
 #[starknet::contract]
 pub mod protocols {
-    use super::{Iprotocols};
+    use starknet::ContractAddress;
     use crate::mods::protocol::protocolcomponent::ProtocolCampagin;
     use openzeppelin_access::ownable::OwnableComponent;
 
     component!(path: ProtocolCampagin, storage: Protocols, event: ProtocolEvent);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+
+
+    #[abi(embed_v0)]
+    impl ProtocolImpl = ProtocolCampagin::ProtocolCampaigm<ContractState>;
+    impl protocolPrivateimpl = ProtocolCampagin::Private<ContractState>;
 
     #[storage]
     struct Storage {
@@ -29,10 +30,9 @@ pub mod protocols {
     }
 
 
-    #[abi(embed_v0)]
-    impl ProtocolImpl = ProtocolCampagin::ProtocolCampaigm<ContractState>;
-
-
-    #[abi(embed_v0)]
-    impl ProtocolsImpl of Iprotocols<ContractState> {}
+    #[constructor]
+    fn constructor(ref self: ContractState, protocol_nft_classhash: felt252,) {
+        self.Protocols._initialize(protocol_nft_classhash);
+    }
 }
+
