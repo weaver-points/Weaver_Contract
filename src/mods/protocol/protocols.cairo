@@ -1,4 +1,3 @@
-
 #[starknet::contract]
 pub mod protocols {
     use starknet::ContractAddress;
@@ -32,14 +31,8 @@ pub mod protocols {
 
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState,
-        protocol_nft_classhash: felt252,
-    ){
+    fn constructor(ref self: ContractState, protocol_nft_classhash: felt252,) {
         self.Protocols._initialize(protocol_nft_classhash);
     }
-
 }
-
-
 
