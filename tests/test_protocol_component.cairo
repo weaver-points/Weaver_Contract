@@ -29,5 +29,7 @@ fn ___setup___() -> IProtocolDispatcher {
 
 
 #[test]
-fn test_create_protocol_campaign() {}
+fn test_create_protocol_campaign() {
+
+}
 
