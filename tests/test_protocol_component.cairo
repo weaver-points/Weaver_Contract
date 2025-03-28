@@ -38,7 +38,6 @@ fn ___setup___() -> ContractAddress {
     return protocol_contract_address;
 }
 
-
 #[test]
 fn test_create_protocol_campaign() {
     let protocol_contract_address = ___setup___();
@@ -59,7 +58,7 @@ fn test_create_protocol_campaign() {
     assert!(protocol_data.protocol_campaign_members == 0, "Invalid protocol campaign members");
     assert!(
         protocol_data.protocol_nft_address != contract_address_const::<0>(),
-        "protocol nft address is not deployed",
+        "protocol nft address is not deployed"
     );
     stop_cheat_caller_address(protocol_contract_address);
 }
@@ -67,7 +66,7 @@ fn test_create_protocol_campaign() {
 #[test]
 #[should_panic(expected: 'PROTOCOL_ALREADY_EXIST')]
 fn test_create_protocol_campaign_already_exist() {
-    let protocol_contract_address = __setup__();
+    let protocol_contract_address = ___setup___();
 
     let protocol_dispatcher = IProtocolDispatcher { contract_address: protocol_contract_address };
 
@@ -91,6 +90,83 @@ fn test_create_protocol_campaign_already_exist() {
 
     start_cheat_caller_address(protocol_contract_address, protocol);
     let create_campaign = protocol_dispatcher.create_protocol_campaign(id, protocol_info.clone());
+    stop_cheat_caller_address(protocol_contract_address);
+}
+
+#[test]
+fn test_emit_create_protocol_campaign() {
+    let protocol_contract_address = ___setup___();
+
+    let protocol_dispatcher = IProtocolDispatcher { contract_address: protocol_contract_address };
+
+    let id: u256 = 111;
+    let mut protocol_info: ByteArray = "WEAVER";
+    let protocol = PROTOCOL();
+
+    let mut spy = spy_events();
+
+    start_cheat_caller_address(protocol_contract_address, protocol);
+    let create_campaign = protocol_dispatcher.create_protocol_campaign(id, protocol_info.clone());
+    assert!(create_campaign == 111, "Invalid protocol campaign id");
+
+    let protocol_data = protocol_dispatcher.get_protocol(id);
+    assert!(protocol_data.protocol_id == id, "Invalid protocol id");
+    assert!(protocol_data.protocol_owner == protocol, "Invalid protocol owner");
+    assert!(protocol_data.protocol_campaign_members == 0, "Invalid protocol campaign members");
+    assert!(
+        protocol_data.protocol_nft_address != contract_address_const::<0>(),
+        "protocol nft address is not deployed"
+    );
+    stop_cheat_caller_address(protocol_contract_address);
+
+    spy
+        .assert_emitted(
+            @array![
+                (
+                    protocol_contract_address,
+                    ProtocolCampagin::Event::ProtocolCampaign(
+                        ProtocolCampagin::ProtocolCampaign {
+                            protocol_id: id,
+                            protocol_owner: protocol,
+                            protocol_nft_address: protocol_data.protocol_nft_address,
+                            block_timestamp: get_block_timestamp()
+                        }
+                    )
+                )
+            ]
+        )
+}
+
+
+#[test]
+fn test_join_prototocl_campaign() {
+    let protocol_contract_address = ___setup___();
+
+    let protocol_dispatcher = IProtocolDispatcher { contract_address: protocol_contract_address };
+
+    let id: u256 = 111;
+    let mut protocol_info: ByteArray = "WEAVER";
+    let protocol = PROTOCOL();
+
+    start_cheat_caller_address(protocol_contract_address, protocol);
+    let create_campaign = protocol_dispatcher.create_protocol_campaign(id, protocol_info.clone());
+    assert!(create_campaign == 111, "Invalid protocol campaign id");
+
+    let protocol_data = protocol_dispatcher.get_protocol(id);
+    assert!(protocol_data.protocol_id == id, "Invalid protocol id");
+    assert!(protocol_data.protocol_owner == protocol, "Invalid protocol owner");
+    assert!(protocol_data.protocol_campaign_members == 0, "Invalid protocol campaign members");
+    assert!(
+        protocol_data.protocol_nft_address != contract_address_const::<0>(),
+        "protocol nft address is not deployed"
+    );
+    stop_cheat_caller_address(protocol_contract_address);
+
+    let user = USER();
+
+    start_cheat_caller_address(protocol_contract_address, user);
+    let join_campaign = protocol_dispatcher.join_protocol_campaign(user, id);
+
     stop_cheat_caller_address(protocol_contract_address);
 }
 
