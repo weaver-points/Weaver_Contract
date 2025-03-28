@@ -38,7 +38,6 @@ fn ___setup___() -> ContractAddress {
     return protocol_contract_address;
 }
 
-
 #[test]
 fn test_create_protocol_campaign() {
     let protocol_contract_address = ___setup___();
@@ -49,25 +48,23 @@ fn test_create_protocol_campaign() {
     let mut protocol_info: ByteArray = "WEAVER";
     let protocol = PROTOCOL();
 
-    start_cheat_caller_address(protocol_contract_address, protocol);
+   start_cheat_caller_address(protocol_contract_address, protocol);
     let create_campaign = protocol_dispatcher.create_protocol_campaign(id, protocol_info.clone());
-    assert!(create_campaign == 111, "Invalid protocol campaign id");
-
+    assert!(create_campaign == 111,"Invalid protocol campaign id");
+   
     let protocol_data = protocol_dispatcher.get_protocol(id);
     assert!(protocol_data.protocol_id == id, "Invalid protocol id");
     assert!(protocol_data.protocol_owner == protocol, "Invalid protocol owner");
     assert!(protocol_data.protocol_campaign_members == 0, "Invalid protocol campaign members");
-    assert!(
-        protocol_data.protocol_nft_address != contract_address_const::<0>(),
-        "protocol nft address is not deployed",
-    );
+    assert!(protocol_data.protocol_nft_address != contract_address_const::<0>(),"protocol nft address is not deployed");
     stop_cheat_caller_address(protocol_contract_address);
+
 }
 
 #[test]
 #[should_panic(expected: 'PROTOCOL_ALREADY_EXIST')]
 fn test_create_protocol_campaign_already_exist() {
-    let protocol_contract_address = __setup__();
+    let protocol_contract_address = ___setup___();
 
     let protocol_dispatcher = IProtocolDispatcher { contract_address: protocol_contract_address };
 
