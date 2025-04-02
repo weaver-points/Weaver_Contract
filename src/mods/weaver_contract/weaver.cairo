@@ -17,7 +17,7 @@ pub mod Weaver {
     };
 
     use crate::mods::types::{ProtocolInfo, TaskInfo, User};
-    use crate::mods::events::{ProtocolRegistered, TaskMinted, Upgraded, UserRegistered};
+    use crate::mods::events::{TaskMinted, Upgraded, UserRegistered};
     use crate::mods::errors::Errors;
     use crate::mods::interfaces::IWeaver::IWeaver;
     use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
@@ -47,7 +47,6 @@ pub mod Weaver {
     pub enum Event {
         Upgraded: Upgraded,
         UserRegistered: UserRegistered,
-        ProtocolRegistered: ProtocolRegistered,
         TaskMinted: TaskMinted,
     }
 
@@ -99,24 +98,6 @@ pub mod Weaver {
             self.emit(Event::TaskMinted(TaskMinted { task_id, user: caller }));
         }
 
-
-        fn protocol_register(ref self: ContractState, protocol_name: ByteArray) {
-            assert(protocol_name.len() > 0, Errors::INVALID_PROTOCOL_NAME);
-
-            let protocol_info = self.protocol_registrations.read(get_caller_address());
-            assert(protocol_info.protocol_name.len() == 0, Errors::PROTOCOL_ALREADY_REGISTERED);
-            self.protocol_registrations.write(get_caller_address(), ProtocolInfo { protocol_name });
-
-            // Dispatch the mint_weaver_nft call to the NFT contract
-            let weaver_nft_dispatcher = IWeaverNFTDispatcher {
-                contract_address: self.weaver_nft_address.read(),
-            };
-            weaver_nft_dispatcher.mint_weaver_nft(get_caller_address());
-            self.emit(Event::ProtocolRegistered(ProtocolRegistered { user: get_caller_address() }));
-        }
-
-
-        // add a verify function
 
         // Getter functions
 

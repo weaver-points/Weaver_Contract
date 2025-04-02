@@ -15,6 +15,10 @@ pub struct TaskInfo {
 #[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
 pub struct ProtocolInfo {
     pub protocol_name: ByteArray,
+    pub registered: bool,
+    pub verified: bool,
+    pub protocol_id: u256,
+    pub protocol_owner: ContractAddress,
 }
 
 

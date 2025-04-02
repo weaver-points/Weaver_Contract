@@ -15,6 +15,7 @@ pub trait IProtocol<TState> {
     fn join_protocol_campaign(ref self: TState, campaign_user: ContractAddress, protocol_id: u256);
     fn set_protocol_matadata_uri(ref self: TState, protocol_id: u256, matadata_uri: ByteArray);
     fn create_task(ref self: TState, task_description: ByteArray) -> u256;
+    fn protocol_register(ref self: TState, protocol_Details: ByteArray);
 
 
     // *************************************************************************
@@ -36,4 +37,6 @@ pub trait IProtocol<TState> {
     fn get_protocol_task_descriptions(self: @TState, task_id: u256) -> ByteArray;
 
     fn get_protocol_campaign_users(self: @TState, protocol_id: u256) -> u256;
+
+    fn get_campaign_members(self: @TState, protocol_id: u256) -> CampaignMembers;
 }

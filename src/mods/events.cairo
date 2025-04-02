@@ -12,12 +12,6 @@ pub struct UserRegistered {
     pub user: ContractAddress,
 }
 
-#[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
-pub struct ProtocolRegistered {
-    #[key]
-    pub user: ContractAddress,
-}
-
 
 #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
 pub struct TaskMinted {
@@ -26,3 +20,4 @@ pub struct TaskMinted {
     #[key]
     pub user: ContractAddress,
 }
+

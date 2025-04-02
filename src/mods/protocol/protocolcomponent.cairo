@@ -17,17 +17,19 @@ pub mod ProtocolCampagin {
 
     use crate::mods::interfaces::Iprotocol::IProtocol;
     use crate::mods::interfaces::ICustomNFT::{ICustomNFTDispatcher, ICustomNFTDispatcherTrait};
+    use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 
     use crate::mods::errors::Errors;
     use crate::mods::types::ProtocolDetails;
     use crate::mods::types::CampaignMembers;
     use crate::mods::types::ProtocolCreateTask;
+    use crate::mods::types::ProtocolInfo;
 
 
     #[storage]
     pub struct Storage {
         pub protocol_id: u256,
-        protocol_counter: u256,
+        pub protocol_counter: u256,
         pub protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
         protocol_owner: Map<u256, ContractAddress>, // map the owner address and the protocol id 
         protocols: Map<u256, ProtocolDetails>, // map the protocol details and the protocol id 
@@ -52,6 +54,9 @@ pub mod ProtocolCampagin {
         task_completetion: Map<
             (u256, ContractAddress), bool
         >, // Map (task_id, user_address) to completion status
+        protocol_register: Map<
+            ContractAddress, ProtocolInfo
+        >, // map the protocol owner to the protocol info
     }
 
 
@@ -66,6 +71,7 @@ pub mod ProtocolCampagin {
         JoinProtocolCampaign: JoinProtocolCampaign,
         DeployProtocolNft: DeployProtocolNft,
         CreateTask: CreateTask,
+        ProtocolRegistered: ProtocolRegistered,
     }
 
 
@@ -103,6 +109,21 @@ pub mod ProtocolCampagin {
         pub block_timestamp: u64,
     }
 
+    #[derive(Copy, Drop, Serde)]
+    pub enum UserEventType {
+        Register,
+        Verify
+    }
+
+
+    #[derive(Drop, starknet::Event)]
+    pub struct ProtocolRegistered {
+        pub protocol_id: u256,
+        pub protocol_owner: ContractAddress,
+        pub event_type: UserEventType,
+        pub block_timestamp: u64,
+    }
+
 
     // *************************************************************************
     //                            EXTERNAL FUNCTIONS
@@ -115,10 +136,46 @@ pub mod ProtocolCampagin {
         +Drop<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of IProtocol<ComponentState<TContractState>> {
+        ///@ protocol registeration
+
+        fn protocol_register(
+            ref self: ComponentState<TContractState>, protocol_Details: ByteArray
+        ) {
+            let caller = get_caller_address();
+            assert(
+                !self.protocol_register.read(caller).registered, Errors::PROTOCOL_ALREADY_REGISTERED
+            );
+            let protocol_id = self.protocol_id.read() + 1;
+            let protocol_info = ProtocolInfo {
+                protocol_name: protocol_Details,
+                registered: true,
+                verified: false,
+                protocol_id: protocol_id,
+                protocol_owner: caller,
+            };
+
+            self.protocol_register.write(caller, protocol_info);
+            self.protocol_owner.write(protocol_id, caller);
+            self.protocol_counter.write(protocol_id);
+
+            self
+                .emit(
+                    ProtocolRegistered {
+                        protocol_id: protocol_id,
+                        protocol_owner: caller,
+                        event_type: UserEventType::Register,
+                        block_timestamp: get_block_timestamp()
+                    }
+                );
+        }
+
+
         /// @notice Create a new protocol campaign
         fn create_protocol_campaign(
             ref self: ComponentState<TContractState>, protocol_id: u256, protocol_info: ByteArray
         ) -> u256 {
+            assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
+            assert(protocol_info.len() > 0, Errors::INVALID_PROTOCOL_NAME);
             let protocol_owner = get_caller_address();
             let protocol_nft_class_hash = self.protocol_nft_class_hash.read();
             let protocol_initialized = self.protocol_initialized.read(protocol_id);
@@ -150,6 +207,7 @@ pub mod ProtocolCampagin {
             campaign_user: ContractAddress,
             protocol_id: u256
         ) {
+            assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
             assert(!campaign_user.is_zero(), Errors::INVALID_ADDRESS);
             let caller = get_caller_address();
             assert(caller == campaign_user, Errors::UNAUTHORIZED);
@@ -171,7 +229,8 @@ pub mod ProtocolCampagin {
         fn create_task(
             ref self: ComponentState<TContractState>, task_description: ByteArray
         ) -> u256 {
-            let protocol_owner = get_caller_address();
+            let protocol_owner = self.protocol_owner.read(self.protocol_id.read());
+            assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
 
             let task_id = self.protocol_task_id.read() + 1;
 
@@ -179,9 +238,6 @@ pub mod ProtocolCampagin {
             assert(!task_exists, Errors::TASK_ALREADY_EXIST);
 
             let protocol_id = self.protocol_id.read();
-            let protocol_owner_stored = self.protocol_owner.read(protocol_id);
-            assert(protocol_owner == protocol_owner_stored, Errors::UNAUTHORIZED);
-
             self._create_task(protocol_id, task_id, task_description, protocol_owner);
 
             return task_id;
@@ -286,6 +342,17 @@ pub mod ProtocolCampagin {
         }
 
 
+        fn get_campaign_members(
+            self: @ComponentState<TContractState>, protocol_id: u256
+        ) -> CampaignMembers {
+            let protocol = self.protocols.read(protocol_id);
+            let campaign_members = self
+                .Campaign_members
+                .read((protocol_id, protocol.protocol_owner));
+            return campaign_members;
+        }
+
+
         /// @notice get the particular protocol matadata uri
         /// protocol_id: id of the returned community
         /// @return ByteArray metadata uri
@@ -366,7 +433,7 @@ pub mod ProtocolCampagin {
 
             self.protocols.write(protocol_id, protocol_details);
             self.protocol_initialized.write(protocol_id, true);
-            self.protocol_owner.write(protocol_id, protocol_owner);
+            self.protocol_owner.write(key: protocol_id, value: protocol_owner);
             self.protocol_counter.write(protocol_id);
             self.protocol_info.write(protocol_id, protocol_info);
 
