@@ -38,8 +38,5 @@ pub trait IProtocol<TState> {
 
     fn get_protocol_campaign_users(self: @TState, protocol_id: u256) -> u256;
 
-    fn get_campaign_members(
-        self: @TState,  protocol_id: u256
-   ) -> CampaignMembers;
-
+    fn get_campaign_members(self: @TState, protocol_id: u256) -> CampaignMembers;
 }

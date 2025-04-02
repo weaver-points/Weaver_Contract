@@ -23,13 +23,13 @@ pub mod ProtocolCampagin {
     use crate::mods::types::ProtocolDetails;
     use crate::mods::types::CampaignMembers;
     use crate::mods::types::ProtocolCreateTask;
-    use crate::mods::types:: ProtocolInfo;
+    use crate::mods::types::ProtocolInfo;
 
 
     #[storage]
     pub struct Storage {
         pub protocol_id: u256,
-        pub  protocol_counter: u256,
+        pub protocol_counter: u256,
         pub protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
         protocol_owner: Map<u256, ContractAddress>, // map the owner address and the protocol id 
         protocols: Map<u256, ProtocolDetails>, // map the protocol details and the protocol id 
@@ -54,10 +54,9 @@ pub mod ProtocolCampagin {
         task_completetion: Map<
             (u256, ContractAddress), bool
         >, // Map (task_id, user_address) to completion status
-
-        protocol_register:Map<ContractAddress, ProtocolInfo>, // map the protocol owner to the protocol info
-
-        
+        protocol_register: Map<
+            ContractAddress, ProtocolInfo
+        >, // map the protocol owner to the protocol info
     }
 
 
@@ -111,10 +110,10 @@ pub mod ProtocolCampagin {
     }
 
     #[derive(Copy, Drop, Serde)]
-   pub enum UserEventType {
-    Register,
-    Verify
-}
+    pub enum UserEventType {
+        Register,
+        Verify
+    }
 
 
     #[derive(Drop, starknet::Event)]
@@ -137,13 +136,16 @@ pub mod ProtocolCampagin {
         +Drop<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of IProtocol<ComponentState<TContractState>> {
-       ///@ protocol registeration 
-       
+        ///@ protocol registeration
 
-       fn protocol_register(ref self: ComponentState<TContractState>, protocol_Details: ByteArray){
-          let caller = get_caller_address();
-          assert(!self.protocol_register.read(caller).registered, Errors::PROTOCOL_ALREADY_REGISTERED);
-          let protocol_id = self.protocol_id.read() + 1;
+        fn protocol_register(
+            ref self: ComponentState<TContractState>, protocol_Details: ByteArray
+        ) {
+            let caller = get_caller_address();
+            assert(
+                !self.protocol_register.read(caller).registered, Errors::PROTOCOL_ALREADY_REGISTERED
+            );
+            let protocol_id = self.protocol_id.read() + 1;
             let protocol_info = ProtocolInfo {
                 protocol_name: protocol_Details,
                 registered: true,
@@ -165,20 +167,15 @@ pub mod ProtocolCampagin {
                         block_timestamp: get_block_timestamp()
                     }
                 );
-       }
-       
-
-
-
+        }
 
 
         /// @notice Create a new protocol campaign
         fn create_protocol_campaign(
             ref self: ComponentState<TContractState>, protocol_id: u256, protocol_info: ByteArray
         ) -> u256 {
-
             assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
-            assert(protocol_info.len() > 0 , Errors::INVALID_PROTOCOL_NAME);
+            assert(protocol_info.len() > 0, Errors::INVALID_PROTOCOL_NAME);
             let protocol_owner = get_caller_address();
             let protocol_nft_class_hash = self.protocol_nft_class_hash.read();
             let protocol_initialized = self.protocol_initialized.read(protocol_id);
@@ -232,7 +229,6 @@ pub mod ProtocolCampagin {
         fn create_task(
             ref self: ComponentState<TContractState>, task_description: ByteArray
         ) -> u256 {
-            
             let protocol_owner = self.protocol_owner.read(self.protocol_id.read());
             assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
 
@@ -347,12 +343,13 @@ pub mod ProtocolCampagin {
 
 
         fn get_campaign_members(
-             self: @ComponentState<TContractState>,  protocol_id: u256
+            self: @ComponentState<TContractState>, protocol_id: u256
         ) -> CampaignMembers {
             let protocol = self.protocols.read(protocol_id);
-            let campaign_members = self.Campaign_members.read((protocol_id, protocol.protocol_owner));
+            let campaign_members = self
+                .Campaign_members
+                .read((protocol_id, protocol.protocol_owner));
             return campaign_members;
-
         }
 
 
@@ -436,11 +433,9 @@ pub mod ProtocolCampagin {
 
             self.protocols.write(protocol_id, protocol_details);
             self.protocol_initialized.write(protocol_id, true);
-            self.protocol_owner.write(key:protocol_id, value:protocol_owner);
+            self.protocol_owner.write(key: protocol_id, value: protocol_owner);
             self.protocol_counter.write(protocol_id);
             self.protocol_info.write(protocol_id, protocol_info);
-
-
 
             // emit event after creating protocol creates campaign
 
@@ -487,8 +482,6 @@ pub mod ProtocolCampagin {
 
             // update states
             self.protocols.write(protocol_id, update_protocol_details);
-
-
 
             self
                 .emit(

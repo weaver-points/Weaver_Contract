@@ -166,7 +166,6 @@ fn test_join_prototocl_campaign() {
 
     start_cheat_caller_address(protocol_contract_address, user);
     let join_campaign = protocol_dispatcher.join_protocol_campaign(user, id);
-    
 
     stop_cheat_caller_address(protocol_contract_address);
 }

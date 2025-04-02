@@ -17,7 +17,7 @@ pub mod Weaver {
     };
 
     use crate::mods::types::{ProtocolInfo, TaskInfo, User};
-    use crate::mods::events::{ TaskMinted, Upgraded, UserRegistered};
+    use crate::mods::events::{TaskMinted, Upgraded, UserRegistered};
     use crate::mods::errors::Errors;
     use crate::mods::interfaces::IWeaver::IWeaver;
     use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
@@ -97,7 +97,6 @@ pub mod Weaver {
             weavernft_dispatcher.mint_weaver_nft(caller);
             self.emit(Event::TaskMinted(TaskMinted { task_id, user: caller }));
         }
-
 
 
         // Getter functions

@@ -14,7 +14,7 @@ use weaver_contract::mods::interfaces::IWeaver::{IWeaverDispatcher, IWeaverDispa
 use weaver_contract::mods::interfaces::IWeaverNFT::{
     IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait
 };
-use weaver_contract::mods::events::{UserRegistered,  TaskMinted};
+use weaver_contract::mods::events::{UserRegistered, TaskMinted};
 use weaver_contract::mods::weaver_contract::weaver::Weaver::{Event};
 
 
@@ -140,15 +140,6 @@ fn test_mint_unregistered_user_panics() {
 }
 
 
-
-
-
-
-
-
-
-
-
 #[test]
 fn test_mint_nft() {
     let weaver_contract_address = __setup__();
@@ -186,9 +177,6 @@ fn test_mint_nft() {
 
     stop_cheat_caller_address(weaver_contract_address);
 }
-
-
-
 
 
 #[test]
