@@ -57,6 +57,7 @@ pub mod ProtocolCampagin {
         protocol_register: Map<
             ContractAddress, ProtocolInfo
         >, // map the protocol owner to the protocol info
+        owner: ContractAddress, // The owner of the contract
     }
 
 
@@ -164,6 +165,33 @@ pub mod ProtocolCampagin {
                         protocol_id: protocol_id,
                         protocol_owner: caller,
                         event_type: UserEventType::Register,
+                        block_timestamp: get_block_timestamp()
+                    }
+                );
+        }
+
+
+        /// @notice verify protocols  after registeration, this is done by the admin
+
+        fn verfify_protocol(
+            ref self: ComponentState<TContractState>, protocol_address: ContractAddress
+        ) {
+            let caller = get_caller_address();
+            assert(caller == self.owner.read(), Errors::UNAUTHORIZED);
+
+            let protocol_info = self.protocol_register.read(protocol_address);
+            assert(protocol_info.registered, Errors::PROTOCOL_NOT_REGISTERED);
+
+            self
+                .protocol_register
+                .write(protocol_address, ProtocolInfo { verified: true, ..protocol_info });
+
+            self
+                .emit(
+                    ProtocolRegistered {
+                        protocol_id: protocol_info.protocol_id,
+                        protocol_owner: get_caller_address(),
+                        event_type: UserEventType::Verify,
                         block_timestamp: get_block_timestamp()
                     }
                 );

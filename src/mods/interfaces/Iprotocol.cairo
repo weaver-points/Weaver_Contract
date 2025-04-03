@@ -16,6 +16,7 @@ pub trait IProtocol<TState> {
     fn set_protocol_matadata_uri(ref self: TState, protocol_id: u256, matadata_uri: ByteArray);
     fn create_task(ref self: TState, task_description: ByteArray) -> u256;
     fn protocol_register(ref self: TState, protocol_Details: ByteArray);
+    fn verfify_protocol(ref self: TState, protocol_address: ContractAddress);
 
 
     // *************************************************************************
