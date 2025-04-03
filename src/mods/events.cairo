@@ -3,6 +3,7 @@ use starknet::{ClassHash, ContractAddress};
 
 #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
 pub struct Upgraded {
+    #[key]
     pub implementation: ClassHash,
 }
 
