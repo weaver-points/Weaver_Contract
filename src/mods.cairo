@@ -15,7 +15,7 @@ pub mod interfaces {
 }
 
 pub mod weaver_contract {
-    pub mod weaver;
+    pub mod weaver_component;
 }
 
 pub mod protocol {
