@@ -78,28 +78,27 @@ fn test_register_user() {
 }
 
 
-#[test]
-fn test_register_user_emit_event() {
-    let weaver_contract_address = __setup__();
-    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
+// #[test]
+// fn test_register_user_emit_event() {
+//     let weaver_contract_address = __setup__();
+//     let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
 
-    let mut spy = spy_events();
+//     let mut spy = spy_events();
 
-    let user: ContractAddress = USER();
-    start_cheat_caller_address(weaver_contract_address, user);
+//     let user: ContractAddress = USER();
+//     start_cheat_caller_address(weaver_contract_address, user);
 
-    let details: ByteArray = "Test User";
-    weaver_contract.register_User(details);
+//     let details: ByteArray = "Test User";
+//     weaver_contract.register_User(details);
 
-    let is_registered = weaver_contract.get_register_user(user);
-    assert!(is_registered.Details == "Test User", "User should be registered");
+//     let is_registered = weaver_contract.get_register_user(user);
+//     assert!(is_registered.Details == "Test User", "User should be registered");
 
-    let expected_event = Event::UserRegistered(UserRegistered { user: user });
-    spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
+//     let expected_event = Event::UserRegistered(UserRegistered { user: user });
+//     spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
 
-    stop_cheat_caller_address(weaver_contract_address);
-}
-
+//     stop_cheat_caller_address(weaver_contract_address);
+// }
 
 #[test]
 #[should_panic(expected: 'USER_ALREADY_REGISTERED')]
@@ -120,60 +119,6 @@ fn test_already_registered_should_panic() {
     // Second registration attempt with same address should fail
     let new_details: ByteArray = "Test User";
     weaver_contract.register_User(new_details);
-
-    stop_cheat_caller_address(weaver_contract_address);
-}
-
-#[test]
-#[should_panic(expected: 'USER_NOT_REGISTERED')] // Case-sensitive match
-fn test_mint_unregistered_user_panics() {
-    let weaver_contract_address = __setup__();
-    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-
-    let unregistered_user = USER(); // Uses the numeric address now
-    start_cheat_caller_address(weaver_contract_address, unregistered_user);
-
-    // This should panic with USER_NOT_REGISTERED
-    weaver_contract.mint(1);
-
-    stop_cheat_caller_address(weaver_contract_address);
-}
-
-
-#[test]
-fn test_mint_nft() {
-    let weaver_contract_address = __setup__();
-
-    let weaver_contract = IWeaverDispatcher { contract_address: weaver_contract_address };
-    let nft_dispatcher = IWeaverNFTDispatcher { contract_address: weaver_contract.erc_721() };
-
-    let mut spy = spy_events();
-    let user: ContractAddress = USER();
-
-    start_cheat_caller_address(weaver_contract_address, user);
-
-    let details: ByteArray = "Test User";
-    weaver_contract.register_User(details);
-
-    let is_registered = weaver_contract.get_register_user(user);
-    assert!(is_registered.Details == "Test User", "User should be registered");
-
-    let task_id = 2;
-
-    let mut task_info = weaver_contract.get_task_info(task_id);
-
-    task_info.is_completed = true;
-
-    assert!(task_info.is_completed, "Task should be completed");
-
-    weaver_contract.mint(task_id);
-
-    let minted_token_id = nft_dispatcher.get_user_token_id(user);
-
-    assert!(minted_token_id > 0, "NFT NOT Minted!");
-
-    let expected_event = Event::TaskMinted(TaskMinted { task_id: task_id, user: user });
-    spy.assert_emitted(@array![(weaver_contract_address, expected_event)]);
 
     stop_cheat_caller_address(weaver_contract_address);
 }

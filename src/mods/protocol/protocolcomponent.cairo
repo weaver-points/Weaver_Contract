@@ -14,16 +14,16 @@ pub mod ProtocolCampagin {
 
 
     use openzeppelin_access::ownable::OwnableComponent;
-
+    use crate::mods::weaver_contract::weaver_component::WeaverComponent;
+    use crate::mods::weaver_contract::weaver_component::WeaverComponent::Weavers;
     use crate::mods::interfaces::Iprotocol::IProtocol;
     use crate::mods::interfaces::ICustomNFT::{ICustomNFTDispatcher, ICustomNFTDispatcherTrait};
-    use crate::mods::interfaces::IWeaverNFT::{IWeaverNFTDispatcher, IWeaverNFTDispatcherTrait};
 
     use crate::mods::errors::Errors;
     use crate::mods::types::ProtocolDetails;
     use crate::mods::types::CampaignMembers;
-    use crate::mods::types::ProtocolCreateTask;
     use crate::mods::types::ProtocolInfo;
+    use crate::mods::types::User;
 
 
     #[storage]
@@ -31,33 +31,17 @@ pub mod ProtocolCampagin {
         pub protocol_id: u256,
         pub protocol_counter: u256,
         pub protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
-        protocol_owner: Map<u256, ContractAddress>, // map the owner address and the protocol id 
-        protocols: Map<u256, ProtocolDetails>, // map the protocol details and the protocol id 
-        protocol_initialized: Map<u256, bool>, // track if the protocol id has been used or not 
+        protocol_owner: Map::<u256, ContractAddress>, // map the owner address and the protocol id 
+        protocols: Map::<u256, ProtocolDetails>, // map the protocol details and the protocol id 
+        protocol_initialized: Map::<u256, bool>, // track if the protocol id has been used or not 
         users_count: u256,
-        pub Campaign_members: Map<
+        pub Campaign_members: Map::<
             (u256, ContractAddress), CampaignMembers
         >, // map the protocol id and the users interested on the protocol campaign
-        protocol_info: Map<u256, ByteArray>, // map the protocol id to the protocol details 
-        protocol_tasks: Map<
-            u256, ProtocolCreateTask
-        >, // map the protocol create task to the task_id
-        pub protocol_task_id: u256,
-        protocol_task_descriptions: Map<
-            (u256, u256), ByteArray
-        >, // map the task description to the protocol_id and to the task_id
-        pub tasks: Map<
-            (u256, ContractAddress), u256
-        >, // map the protocol_id and the protocol_owner to the task_id
-        tasks_initialized: Map<u256, bool>, // track if the task_id has been used or not
-        task_counter: u256,
-        task_completetion: Map<
-            (u256, ContractAddress), bool
-        >, // Map (task_id, user_address) to completion status
-        protocol_register: Map<
+        protocol_info: Map::<u256, ByteArray>, // map the protocol id to the protocol details 
+        pub protocol_register: Map::<
             ContractAddress, ProtocolInfo
         >, // map the protocol owner to the protocol info
-        owner: ContractAddress, // The owner of the contract
     }
 
 
@@ -71,7 +55,6 @@ pub mod ProtocolCampagin {
         ProtocolCampaign: ProtocolCampaign,
         JoinProtocolCampaign: JoinProtocolCampaign,
         DeployProtocolNft: DeployProtocolNft,
-        CreateTask: CreateTask,
         ProtocolRegistered: ProtocolRegistered,
     }
 
@@ -135,6 +118,7 @@ pub mod ProtocolCampagin {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
+        impl Weavers: WeaverComponent::HasComponent<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of IProtocol<ComponentState<TContractState>> {
         ///@ protocol registeration
@@ -148,7 +132,7 @@ pub mod ProtocolCampagin {
             );
             let protocol_id = self.protocol_id.read() + 1;
             let protocol_info = ProtocolInfo {
-                protocol_name: protocol_Details,
+                protocol_Details: protocol_Details,
                 registered: true,
                 verified: false,
                 protocol_id: protocol_id,
@@ -176,8 +160,8 @@ pub mod ProtocolCampagin {
         fn verfify_protocol(
             ref self: ComponentState<TContractState>, protocol_address: ContractAddress
         ) {
-            let caller = get_caller_address();
-            assert(caller == self.owner.read(), Errors::UNAUTHORIZED);
+            let caller = get_dep_component!(@self, Weavers).get_owner();
+            assert(caller == get_caller_address(), Errors::UNAUTHORIZED);
 
             let protocol_info = self.protocol_register.read(protocol_address);
             assert(protocol_info.registered, Errors::PROTOCOL_NOT_REGISTERED);
@@ -203,8 +187,11 @@ pub mod ProtocolCampagin {
             ref self: ComponentState<TContractState>, protocol_id: u256, protocol_info: ByteArray
         ) -> u256 {
             assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
-            assert(protocol_info.len() > 0, Errors::INVALID_PROTOCOL_NAME);
             let protocol_owner = get_caller_address();
+            assert(
+                self.protocol_register.read(protocol_owner).registered,
+                Errors::PROTOCOL_NOT_REGISTERED
+            );
             let protocol_nft_class_hash = self.protocol_nft_class_hash.read();
             let protocol_initialized = self.protocol_initialized.read(protocol_id);
             assert(!protocol_initialized, Errors::PROTOCOL_ALREADY_EXIST);
@@ -235,6 +222,7 @@ pub mod ProtocolCampagin {
             campaign_user: ContractAddress,
             protocol_id: u256
         ) {
+            get_dep_component!(@self, Weavers).get_register_user(campaign_user);
             assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
             assert(!campaign_user.is_zero(), Errors::INVALID_ADDRESS);
             let caller = get_caller_address();
@@ -254,24 +242,6 @@ pub mod ProtocolCampagin {
         }
 
 
-        fn create_task(
-            ref self: ComponentState<TContractState>, task_description: ByteArray
-        ) -> u256 {
-            let protocol_owner = self.protocol_owner.read(self.protocol_id.read());
-            assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
-
-            let task_id = self.protocol_task_id.read() + 1;
-
-            let task_exists = self.tasks_initialized.read(task_id);
-            assert(!task_exists, Errors::TASK_ALREADY_EXIST);
-
-            let protocol_id = self.protocol_id.read();
-            self._create_task(protocol_id, task_id, task_description, protocol_owner);
-
-            return task_id;
-        }
-
-
         /// @notice set the matadat uri of the protocol
         /// protcol_id: the protocol_id for the protocol
         /// matadata_uri: The protocol matadata uri
@@ -280,6 +250,10 @@ pub mod ProtocolCampagin {
             ref self: ComponentState<TContractState>, protocol_id: u256, matadata_uri: ByteArray
         ) {
             let protocol_owner = self.protocol_owner.read(protocol_id);
+            assert(
+                self.protocol_register.read(protocol_owner).registered,
+                Errors::PROTOCOL_NOT_REGISTERED
+            );
             assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
 
             let protocol_details = self.protocols.read(protocol_id);
@@ -305,57 +279,6 @@ pub mod ProtocolCampagin {
             } else {
                 (false, campaign_member)
             }
-        }
-
-        fn is_task_complete(
-            ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
-        ) -> bool {
-            // Check if the task exists
-            let task_exists = self.tasks_initialized.read(task_id);
-            assert(task_exists, Errors::TASK_NOT_EXISTS);
-
-            // Get task details
-            let task_details = self.protocol_tasks.read(task_id);
-            let protocol_id = task_details.protocol_id;
-
-            // check if the user joined the campaign
-            let (is_member, _) = self.is_campaign_member(campaign_user, protocol_id);
-            assert(is_member, Errors::USER_NOT_REGISTERED);
-
-            // check if the task has been completed
-            let task_completed = self.task_completetion.read((task_id, campaign_user));
-            //  assert if the task has not yet been completed Errors::TASK_NOT_YET_COMPLETED
-            assert(task_completed, Errors::TASK_NOT_YET_COMPLETED);
-
-            // mint the protocol nft to the user that completed the task by calling the
-            // _mint_protocol_nft()
-            if task_completed {
-                let protocol_details = self.protocols.read(protocol_id);
-                let protocol_nft_address = protocol_details.protocol_nft_address;
-
-                let _ = self._mint_protocol_nft(campaign_user, protocol_nft_address);
-            }
-
-            return task_completed;
-        }
-
-        fn mark_task_complete(
-            ref self: ComponentState<TContractState>, campaign_user: ContractAddress, task_id: u256
-        ) {
-            let task_exists = self.tasks_initialized.read(task_id);
-            assert(task_exists, Errors::TASK_NOT_EXISTS);
-
-            let task_details = self.protocol_tasks.read(task_id);
-            let protocol_id = task_details.protocol_id;
-
-            let protocol_owner = self.protocol_owner.read(protocol_id);
-            assert(protocol_owner == get_caller_address(), Errors::UNAUTHORIZED);
-
-            let (is_member, _) = self.is_campaign_member(campaign_user, protocol_id);
-            assert(is_member, Errors::USER_NOT_REGISTERED);
-
-            // Mark the task as completed for this user
-            self.task_completetion.write((task_id, campaign_user), true);
         }
 
 
@@ -393,24 +316,25 @@ pub mod ProtocolCampagin {
         }
 
 
-        fn get_protocol_tasks_details(
-            self: @ComponentState<TContractState>, protocol_id: u256
-        ) -> ProtocolCreateTask {
-            return self.protocol_tasks.read(protocol_id);
-        }
-
-        fn get_protocol_task_descriptions(
-            self: @ComponentState<TContractState>, task_id: u256
-        ) -> ByteArray {
-            let task = self.protocol_tasks.read(task_id);
-            return task.task_Description;
-        }
-
         fn get_protocol_campaign_users(
             self: @ComponentState<TContractState>, protocol_id: u256
         ) -> u256 {
             let protocol = self.protocols.read(protocol_id);
             return protocol.protocol_campaign_members;
+        }
+
+
+        fn get_registered_protocol(
+            self: @ComponentState<TContractState>, protocol_owner: ContractAddress
+        ) -> ProtocolInfo {
+            let protocol_info = self.protocol_register.read(protocol_owner);
+            assert(protocol_info.registered, Errors::PROTOCOL_NOT_REGISTERED);
+            return protocol_info;
+        }
+
+
+        fn get_protocol_nft_class_hash(self: @ComponentState<TContractState>) -> ClassHash {
+            return self.protocol_nft_class_hash.read();
         }
     }
 
@@ -424,6 +348,7 @@ pub mod ProtocolCampagin {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
+        impl Weavers: WeaverComponent::HasComponent<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of PrivateTrait<TContractState> {
         // @notice initialize protocol component
@@ -518,47 +443,6 @@ pub mod ProtocolCampagin {
                         caller: user,
                         token_id: minted_token_id,
                         user: user,
-                        block_timestamp: get_block_timestamp()
-                    }
-                );
-        }
-
-        ///@notice internal function that create task for the protocol
-        /// protocol_id: The id of the protocol that created the task
-        /// task_id: The task id of the task that was created
-        /// task_description: The description of the task
-        /// protocol_owner: The owner of the task created
-
-        fn _create_task(
-            ref self: ComponentState<TContractState>,
-            protocol_id: u256,
-            task_id: u256,
-            task_description: ByteArray,
-            protocol_owner: ContractAddress
-        ) {
-            // write to the storage
-
-            let task_descriptions = ProtocolCreateTask {
-                protocol_id: protocol_id,
-                protocol_owner: protocol_owner,
-                task_id: task_id,
-                task_Description: task_description.clone()
-            };
-
-            self.protocol_tasks.write(task_id, task_descriptions);
-            self.protocol_task_id.write(task_id);
-            self.tasks.write((protocol_id, protocol_owner), task_id);
-            self.protocol_task_descriptions.write((protocol_id, task_id), task_description.clone());
-            self.tasks_initialized.write(task_id, true);
-            self.task_counter.write(task_id);
-
-            self
-                .emit(
-                    CreateTask {
-                        protocol_id: protocol_id,
-                        task_id: task_id,
-                        protocol_owner: protocol_owner,
-                        task_description: task_description,
                         block_timestamp: get_block_timestamp()
                     }
                 );
