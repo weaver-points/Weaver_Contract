@@ -14,7 +14,8 @@ pub mod ProtocolCampagin {
 
 
     use openzeppelin_access::ownable::OwnableComponent;
-
+    use crate::mods::weaver_contract::weaver_component::Weaver;
+    use crate::mods::weaver_contract::weaver_component::Weaver::Weavers;
     use crate::mods::interfaces::Iprotocol::IProtocol;
     use crate::mods::interfaces::ICustomNFT::{ICustomNFTDispatcher, ICustomNFTDispatcherTrait};
 
@@ -22,6 +23,7 @@ pub mod ProtocolCampagin {
     use crate::mods::types::ProtocolDetails;
     use crate::mods::types::CampaignMembers;
     use crate::mods::types::ProtocolInfo;
+    use crate::mods::types::User;
 
 
     #[storage]
@@ -40,7 +42,7 @@ pub mod ProtocolCampagin {
         pub protocol_register: Map::<
             ContractAddress, ProtocolInfo
         >, // map the protocol owner to the protocol info
-        owner: ContractAddress, // The owner of the contract
+      
     }
 
 
@@ -117,6 +119,7 @@ pub mod ProtocolCampagin {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
+        impl Weavers:Weaver::HasComponent<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of IProtocol<ComponentState<TContractState>> {
         ///@ protocol registeration
@@ -158,8 +161,9 @@ pub mod ProtocolCampagin {
         fn verfify_protocol(
             ref self: ComponentState<TContractState>, protocol_address: ContractAddress
         ) {
-            let caller = get_caller_address();
-            assert(caller == self.owner.read(), Errors::UNAUTHORIZED);
+            let caller =  get_dep_component!(@self,Weavers).get_owner();
+            assert(caller == get_caller_address(), Errors::UNAUTHORIZED);
+           
 
             let protocol_info = self.protocol_register.read(protocol_address);
             assert(protocol_info.registered, Errors::PROTOCOL_NOT_REGISTERED);
@@ -220,6 +224,8 @@ pub mod ProtocolCampagin {
             campaign_user: ContractAddress,
             protocol_id: u256
         ) {
+              get_dep_component!(@self,Weavers).
+             get_register_user(campaign_user);
             assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
             assert(!campaign_user.is_zero(), Errors::INVALID_ADDRESS);
             let caller = get_caller_address();
@@ -345,6 +351,7 @@ pub mod ProtocolCampagin {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
+        impl Weavers:Weaver::HasComponent<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of PrivateTrait<TContractState> {
         // @notice initialize protocol component

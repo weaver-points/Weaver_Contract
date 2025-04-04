@@ -32,12 +32,13 @@ pub mod Weaver {
 
     #[storage]
     pub struct Storage {
-        weaver_nft_address: ContractAddress,
+        weaver_nft_address: ContractAddress ,
         users: Map::<ContractAddress, User>,
         // user_index: Map::<u256, ContractAddress>,
         user_count: u256,
         User_id: u256,
         user: Map::<u256, ContractAddress>,
+        owner: ContractAddress,
     }
 
 
@@ -57,7 +58,7 @@ pub mod Weaver {
     //                            EXTERNAL FUNCTIONS
     // *************************************************************************
 
-    #[embeddable_as(Weaver)]
+    #[embeddable_as(Weavers)]
     impl WeaverImpl<
         TContractState,
         +HasComponent<TContractState>,
@@ -92,5 +93,43 @@ pub mod Weaver {
                     )
                 );
         }
+
+        fn get_register_user(self: @ComponentState<TContractState>, address: ContractAddress) -> User {
+            assert(address.is_non_zero(), Errors::INVALID_ADDRESS);
+            assert(self.users.read(address).registered, Errors::USER_NOT_REGISTERED);
+            return self.users.read(address);
+        }
+
+        fn get_owner (self: @ComponentState<TContractState>) -> ContractAddress {
+            return self.owner.read();
+        }
+
     }
+
+    // *************************************************************************
+    //                            PRIVATE FUNCTIONS
+    // *************************************************************************
+
+    #[generate_trait]
+    pub impl Private<
+    TContractState,
+    +HasComponent<TContractState>,
+    +Drop<TContractState>,
+    impl Ownable: OwnableComponent::HasComponent<TContractState>
+> of PrivateTrait<TContractState> {
+
+    fn set_erc721(ref self:ComponentState<TContractState>, address: ContractAddress) {
+        assert(get_caller_address() == self.owner.read(), Errors::UNAUTHORIZED);
+        assert(address.is_non_zero(), Errors::INVALID_ADDRESS);
+        self.weaver_nft_address.write(address);
+    }
+
+
+    
 }
+}
+
+
+
+
+ 
