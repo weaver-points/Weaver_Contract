@@ -1,9 +1,10 @@
 #[starknet::component]
-pub mod Weaver {
+pub mod WeaverComponent {
     // *************************************************************************
     //                            IMPORT
     // *************************************************************************
 
+    use OwnableComponent::InternalTrait;
     use core::num::traits::Zero;
     use starknet::storage::StoragePointerReadAccess;
     use starknet::storage::StorageMapWriteAccess;
@@ -32,7 +33,7 @@ pub mod Weaver {
 
     #[storage]
     pub struct Storage {
-        weaver_nft_address: ContractAddress ,
+        weaver_nft_address: ContractAddress,
         users: Map::<ContractAddress, User>,
         // user_index: Map::<u256, ContractAddress>,
         user_count: u256,
@@ -94,16 +95,17 @@ pub mod Weaver {
                 );
         }
 
-        fn get_register_user(self: @ComponentState<TContractState>, address: ContractAddress) -> User {
+        fn get_register_user(
+            self: @ComponentState<TContractState>, address: ContractAddress
+        ) -> User {
             assert(address.is_non_zero(), Errors::INVALID_ADDRESS);
             assert(self.users.read(address).registered, Errors::USER_NOT_REGISTERED);
             return self.users.read(address);
         }
 
-        fn get_owner (self: @ComponentState<TContractState>) -> ContractAddress {
+        fn get_owner(self: @ComponentState<TContractState>) -> ContractAddress {
             return self.owner.read();
         }
-
     }
 
     // *************************************************************************
@@ -112,24 +114,21 @@ pub mod Weaver {
 
     #[generate_trait]
     pub impl Private<
-    TContractState,
-    +HasComponent<TContractState>,
-    +Drop<TContractState>,
-    impl Ownable: OwnableComponent::HasComponent<TContractState>
-> of PrivateTrait<TContractState> {
+        TContractState,
+        +HasComponent<TContractState>,
+        +Drop<TContractState>,
+        impl Ownable: OwnableComponent::HasComponent<TContractState>
+    > of PrivateTrait<TContractState> {
+        fn _initialize(ref self: ComponentState<TContractState>, owner: ContractAddress) {
+            let mut ownable_comp = get_dep_component_mut!(ref self, Ownable);
+            ownable_comp.initializer(owner);
+        }
 
-    fn set_erc721(ref self:ComponentState<TContractState>, address: ContractAddress) {
-        assert(get_caller_address() == self.owner.read(), Errors::UNAUTHORIZED);
-        assert(address.is_non_zero(), Errors::INVALID_ADDRESS);
-        self.weaver_nft_address.write(address);
+        fn set_erc721(ref self: ComponentState<TContractState>, address: ContractAddress) {
+            assert(get_caller_address() == self.owner.read(), Errors::UNAUTHORIZED);
+            assert(address.is_non_zero(), Errors::INVALID_ADDRESS);
+            self.weaver_nft_address.write(address);
+        }
     }
-
-
-    
-}
 }
 
-
-
-
- 
