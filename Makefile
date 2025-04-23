@@ -2,6 +2,8 @@ declare:
 	sncast \
     declare \
     --fee-token eth \
+	--url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- \
+	--name ${name} \
     --contract-name ${name}
 
 deploy:
@@ -23,5 +25,13 @@ upgrade:
 
 	set_env:
 	export STARKNET_ACCOUNT=
-    export STARKNET_KEYSTORE=
-    export STARKNET_RPC=
+    export STARKNET_KEYSTORE= ../../keystore/keystore.json
+    export STARKNET_RPC= https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8-
+
+
+	sncast \                                                                                            
+    account create \
+	--url 'https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- \'
+    --name weaver_deploy
+
+	

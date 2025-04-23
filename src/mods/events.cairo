@@ -24,12 +24,3 @@ pub struct UserRegistered {
     pub block_timestamp: u64,
 }
 
-
-#[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
-pub struct TaskMinted {
-    #[key]
-    pub task_id: u256,
-    #[key]
-    pub user: ContractAddress,
-}
-

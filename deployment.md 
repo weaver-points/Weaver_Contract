@@ -1,0 +1,32 @@
+sncast account create --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --name  weaver_deploy
+
+	sncast account deploy --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --name  weaver_deploy --fee-token eth
+
+	sncast --account deploy_weaver declare --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --contract-name protocolNFT --fee-token eth 
+
+	sncast --account deploy_weaver declare --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --contract-name protocols --fee-token eth 
+
+    sncast --account deploy_weaver declare --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --contract-name WeaverNFT --fee-token eth 
+
+	sncast --account deploy_weaver declare --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --contract-name Weaver --fee-token eth 
+
+
+	sncast --account deploy_weaver deploy --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --class-hash  0x00a48e557dce8fa7f837e547e2370cf4cb1ad4c6639b1ffc901c1ad1654460c1 --fee-token eth --constructor-calldata 0x05d1529a7e55E8f0E6591465E2c34bFF10d5e40F74f510cF8EA229a880096C3a
+
+	sncast --account deploy_weaver deploy --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --class-hash 0x0689773dfcdaeff1fb3e94e7b3c00af755af354f5a4340bbbda35d7e4bb5c071  --fee-token eth --constructor-calldata 0x05d1529a7e55E8f0E6591465E2c34bFF10d5e40F74f510cF8EA229a880096C3a
+
+	sncast --account deploy_weaver deploy --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --class-hash 0x054e3fc7fa075587839d33e723acb1c42e32e9f8fedd41e3244ce80fa8ad24e3  --fee-token eth --constructor-calldata 0x01f3801de0af4481bdc1bd20960ea7850d53375e5830f1c2ecaecbfc5987c814
+
+   sncast --account deploy_weaver deploy --url https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/CGmQDezuhKApBVtytny0Hh7MvAHwTh8- --class-hash 0x01f3801de0af4481bdc1bd20960ea7850d53375e5830f1c2ecaecbfc5987c814  --fee-token eth --constructor-calldata  0x00 0x01  0x05d1529a7e55E8f0E6591465E2c34bFF10d5e40F74f510cF8EA229a880096C3a 
+
+
+
+
+
+
+
+
+
+
+
+

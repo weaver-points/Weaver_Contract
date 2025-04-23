@@ -1,5 +1,5 @@
 #[starknet::component]
-pub mod ProtocolCampagin {
+pub mod ProtocolCampaign {
     use core::traits::TryInto;
     use core::num::traits::zero::Zero;
 
@@ -14,8 +14,7 @@ pub mod ProtocolCampagin {
 
 
     use openzeppelin_access::ownable::OwnableComponent;
-    use crate::mods::weaver_contract::weaver_component::WeaverComponent;
-    use crate::mods::weaver_contract::weaver_component::WeaverComponent::Weavers;
+
     use crate::mods::interfaces::Iprotocol::IProtocol;
     use crate::mods::interfaces::ICustomNFT::{ICustomNFTDispatcher, ICustomNFTDispatcherTrait};
 
@@ -33,7 +32,6 @@ pub mod ProtocolCampagin {
         pub protocol_nft_class_hash: ClassHash, //  The protocol nft class hash 
         protocol_owner: Map::<u256, ContractAddress>, // map the owner address and the protocol id 
         protocols: Map::<u256, ProtocolDetails>, // map the protocol details and the protocol id 
-        protocol_initialized: Map::<u256, bool>, // track if the protocol id has been used or not 
         users_count: u256,
         pub Campaign_members: Map::<
             (u256, ContractAddress), CampaignMembers
@@ -84,15 +82,6 @@ pub mod ProtocolCampagin {
     }
 
 
-    #[derive(Drop, starknet::Event)]
-    pub struct CreateTask {
-        pub protocol_id: u256,
-        pub task_id: u256,
-        pub protocol_owner: ContractAddress,
-        pub task_description: ByteArray,
-        pub block_timestamp: u64,
-    }
-
     #[derive(Copy, Drop, Serde)]
     pub enum UserEventType {
         Register,
@@ -118,7 +107,6 @@ pub mod ProtocolCampagin {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
-        impl Weavers: WeaverComponent::HasComponent<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of IProtocol<ComponentState<TContractState>> {
         ///@ protocol registeration
@@ -155,33 +143,6 @@ pub mod ProtocolCampagin {
         }
 
 
-        /// @notice verify protocols  after registeration, this is done by the admin
-
-        fn verfify_protocol(
-            ref self: ComponentState<TContractState>, protocol_address: ContractAddress
-        ) {
-            let caller = get_dep_component!(@self, Weavers).get_owner();
-            assert(caller == get_caller_address(), Errors::UNAUTHORIZED);
-
-            let protocol_info = self.protocol_register.read(protocol_address);
-            assert(protocol_info.registered, Errors::PROTOCOL_NOT_REGISTERED);
-
-            self
-                .protocol_register
-                .write(protocol_address, ProtocolInfo { verified: true, ..protocol_info });
-
-            self
-                .emit(
-                    ProtocolRegistered {
-                        protocol_id: protocol_info.protocol_id,
-                        protocol_owner: get_caller_address(),
-                        event_type: UserEventType::Verify,
-                        block_timestamp: get_block_timestamp()
-                    }
-                );
-        }
-
-
         /// @notice Create a new protocol campaign
         fn create_protocol_campaign(
             ref self: ComponentState<TContractState>, protocol_id: u256, protocol_info: ByteArray
@@ -193,8 +154,6 @@ pub mod ProtocolCampagin {
                 Errors::PROTOCOL_NOT_REGISTERED
             );
             let protocol_nft_class_hash = self.protocol_nft_class_hash.read();
-            let protocol_initialized = self.protocol_initialized.read(protocol_id);
-            assert(!protocol_initialized, Errors::PROTOCOL_ALREADY_EXIST);
 
             let protocol_nft_address = self
                 ._deploy_protocol_nft(
@@ -213,23 +172,20 @@ pub mod ProtocolCampagin {
         }
 
 
-        /// @notice adds users to the protocol campaign
-        /// campaign_user: The user that joins the protocol campaign
-        /// protocol_id: The id of the protocol that the user will join their campaign
+        /// @notice adds users to the protocol campaign and the users needs to register first before
+        /// joining the campaign and have access to weaver NFT campaign_user: The user that joins
+        /// the protocol campaign protocol_id: The id of the protocol that the user will join their
+        /// campaign
 
         fn join_protocol_campaign(
             ref self: ComponentState<TContractState>,
             campaign_user: ContractAddress,
             protocol_id: u256
         ) {
-            get_dep_component!(@self, Weavers).get_register_user(campaign_user);
             assert(protocol_id.is_non_zero(), Errors::INVALID_PROTOCOL_ID);
             assert(!campaign_user.is_zero(), Errors::INVALID_ADDRESS);
             let caller = get_caller_address();
             assert(caller == campaign_user, Errors::UNAUTHORIZED);
-
-            let protocol_initialized = self.protocol_initialized.read(protocol_id);
-            assert(protocol_initialized, Errors::PROTOCOL_DOES_NOT_EXIST);
 
             let (is_member, _): (bool, CampaignMembers) = self
                 .is_campaign_member(campaign_user, protocol_id);
@@ -242,7 +198,7 @@ pub mod ProtocolCampagin {
         }
 
 
-        /// @notice set the matadat uri of the protocol
+        /// @notice set the matadata uri of the protocol
         /// protcol_id: the protocol_id for the protocol
         /// matadata_uri: The protocol matadata uri
 
@@ -289,18 +245,32 @@ pub mod ProtocolCampagin {
         fn get_protocol(
             self: @ComponentState<TContractState>, protocol_id: u256
         ) -> ProtocolDetails {
-            return self.protocols.read(protocol_id);
+            let protocol = self.protocols.read(protocol_id);
+            let protocol_construct = ProtocolDetails {
+                protocol_details: Option::Some(
+                    self.get_registered_protocol(protocol.protocol_owner)
+                ),
+                ..protocol
+            };
+            return protocol_construct;
         }
 
 
-        fn get_campaign_members(
-            self: @ComponentState<TContractState>, protocol_id: u256
+        /// @notice get the particular protocol campaign for each users
+        /// protocol_id: id of the returned community
+        /// user: The user that joined the protocol campaign
+        /// @return campaignMembers: The details of the protocol campaign for each users
+
+        fn get_campaign_for_member(
+            self: @ComponentState<TContractState>, protocol_id: u256, user: ContractAddress
         ) -> CampaignMembers {
             let protocol = self.protocols.read(protocol_id);
-            let campaign_members = self
-                .Campaign_members
-                .read((protocol_id, protocol.protocol_owner));
-            return campaign_members;
+            let campaign_members = self.Campaign_members.read((protocol_id, user));
+            let campaign_construct = CampaignMembers {
+                campaign_details: Option::Some(self.get_protocol(protocol.protocol_id)),
+                ..campaign_members
+            };
+            return campaign_construct;
         }
 
 
@@ -336,6 +306,50 @@ pub mod ProtocolCampagin {
         fn get_protocol_nft_class_hash(self: @ComponentState<TContractState>) -> ClassHash {
             return self.protocol_nft_class_hash.read();
         }
+
+        fn get_all_protocol_details(
+            self: @ComponentState<TContractState>
+        ) -> Array<ProtocolDetails> {
+            let mut index = 1;
+            let mut protocol = array![];
+            let protocol_counter = self.protocol_counter.read();
+            while index <= protocol_counter {
+                let protocol_details = self.protocols.read(index);
+                let protocol_construct = ProtocolDetails {
+                    protocol_details: Option::Some(
+                        self.get_registered_protocol(protocol_details.protocol_owner)
+                    ),
+                    ..protocol_details
+                };
+                protocol.append(protocol_construct);
+                index += 1;
+            };
+            return protocol;
+        }
+
+        fn get_all_campaign_for_members(
+            self: @ComponentState<TContractState>, user: ContractAddress
+        ) -> Array<CampaignMembers> {
+            let mut index = 1;
+            let mut campaign_user = array![];
+            let length = self.protocol_counter.read();
+            while index <= length {
+                let campaign_details = self.Campaign_members.read((index, user));
+                if campaign_details.user_address == user {
+                    let campaign_construct = CampaignMembers {
+                        campaign_details: Option::Some(
+                            self.get_protocol(campaign_details.protocol_id)
+                        ),
+                        ..campaign_details
+                    };
+
+                    campaign_user.append(campaign_construct);
+                }
+
+                index += 1;
+            };
+            return campaign_user;
+        }
     }
 
 
@@ -348,7 +362,6 @@ pub mod ProtocolCampagin {
         TContractState,
         +HasComponent<TContractState>,
         +Drop<TContractState>,
-        impl Weavers: WeaverComponent::HasComponent<TContractState>,
         impl Ownable: OwnableComponent::HasComponent<TContractState>
     > of PrivateTrait<TContractState> {
         // @notice initialize protocol component
@@ -379,13 +392,13 @@ pub mod ProtocolCampagin {
                 protocol_id: protocol_id,
                 protocol_owner: protocol_owner,
                 protocol_matadata_uri: "",
+                protocol_details: Option::None,
                 protocol_nft_address: protocol_nft_address,
                 protocol_campaign_members: 0,
                 protocol_info: "",
             };
 
             self.protocols.write(protocol_id, protocol_details);
-            self.protocol_initialized.write(protocol_id, true);
             self.protocol_owner.write(key: protocol_id, value: protocol_owner);
             self.protocol_counter.write(protocol_id);
             self.protocol_info.write(protocol_id, protocol_info);
@@ -419,7 +432,10 @@ pub mod ProtocolCampagin {
             let minted_token_id = self._mint_protocol_nft(user, protocol_nft_address);
 
             let Campaign_members = CampaignMembers {
-                user_address: user, protocol_id: protocol_id, protocol_token_id: minted_token_id,
+                user_address: user,
+                protocol_id: protocol_id,
+                campaign_details: Option::None,
+                protocol_token_id: minted_token_id,
             };
 
             // Update storage
