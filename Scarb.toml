@@ -23,3 +23,9 @@ test = "snforge test"
 [profile.dev.cairo]
 unstable-add-statements-code-locations-debug-info = true
 unstable-add-statements-functions-debug-info = true
+
+
+[profile.default]
+account = "weaver_deploy"
+accounts-file = ".starknet_accounts/accounts.json"
+network = "sepolia"

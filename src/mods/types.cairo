@@ -8,12 +8,6 @@ pub struct User {
     pub user_owner: ContractAddress,
 }
 
-#[derive(Copy, Drop, Serde, starknet::Store)]
-pub struct TaskInfo {
-    pub task_id: u256,
-    pub user: ContractAddress,
-    pub is_completed: bool,
-}
 
 #[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
 pub struct ProtocolInfo {
@@ -31,6 +25,7 @@ pub struct ProtocolDetails {
     pub protocol_owner: ContractAddress,
     pub protocol_matadata_uri: ByteArray,
     pub protocol_nft_address: ContractAddress,
+    pub protocol_details: Option<ProtocolInfo>,
     pub protocol_campaign_members: u256,
     pub protocol_info: ByteArray,
 }
@@ -40,14 +35,7 @@ pub struct ProtocolDetails {
 pub struct CampaignMembers {
     pub user_address: ContractAddress,
     pub protocol_id: u256,
+    pub campaign_details: Option<ProtocolDetails>,
     pub protocol_token_id: u256,
-}
-
-#[derive(Drop, Serde, Debug, PartialEq, starknet::Store)]
-pub struct ProtocolCreateTask {
-    pub protocol_id: u256,
-    pub protocol_owner: ContractAddress,
-    pub task_Description: ByteArray,
-    pub task_id: u256,
 }
 

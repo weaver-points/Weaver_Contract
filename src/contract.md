@@ -1,0 +1,17 @@
+
+// class hash 
+protocolNFT classhash: 0x01f3801de0af4481bdc1bd20960ea7850d53375e5830f1c2ecaecbfc5987c814
+protocols classhash: 0x054e3fc7fa075587839d33e723acb1c42e32e9f8fedd41e3244ce80fa8ad24e3
+weaver NFT classhash: 0x0689773dfcdaeff1fb3e94e7b3c00af755af354f5a4340bbbda35d7e4bb5c071
+weaverContract classhash:  0x00a48e557dce8fa7f837e547e2370cf4cb1ad4c6639b1ffc901c1ad1654460c1
+
+
+// address 
+weaverContract addressb: 0x000a6ab43cb891ee68a350dbfd2a972bab0379701c6fc115802284dad4d22dea
+WeaverNFT address : 0x041def29d2d5c719c89788959db261c708303c6fe9ef2cdcddd3af6678c6bf07
+protocols address: 0x02d916e6f8d8e2dc8d3c9a8a6f25f5f72b280ed25fdaf18e09116800c608e26e
+protocolNFT address: 0x051685ff5506f403a05385f0ae10ab637336da849925bc5ebf6cd0a04055de12
+
+
+
+
