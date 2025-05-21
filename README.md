@@ -19,4 +19,4 @@ Community-driven open-source architecture facilitating rapid innovation
 
 
 - [Weaver Community ](https://t.me/weaverHQ)
-- [Starknet developer resources](https://X.com/weaver_HQ)
+- [Weaver X ](https://X.com/weaver_HQ)
