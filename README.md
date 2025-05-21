@@ -18,5 +18,5 @@ Pioneer status in developing a Starknet-native growth campaign platform
 Community-driven open-source architecture facilitating rapid innovation
 
 
-- [Weaver Community ](https://t.me/weaverHQ)
+- [Weaver Community ](https://t.me/+Lft-b5f0RolkNjJk)
 - [Weaver X ](https://X.com/weaver_HQ)
